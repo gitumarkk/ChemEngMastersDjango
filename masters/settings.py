@@ -38,6 +38,18 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
 )
 
+PROJECT_APPS = (
+
+)
+
+THIRD_PARTY_APPS = (
+    'south',  # data migration
+    'django_nose',  # unittesting
+)
+
+
+INSTALLED_APPS += PROJECT_APPS + THIRD_PARTY_APPS
+
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -57,8 +69,10 @@ WSGI_APPLICATION = 'masters.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'ceber_masters',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres'
     }
 }
 
