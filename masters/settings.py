@@ -39,7 +39,7 @@ INSTALLED_APPS = (
 )
 
 PROJECT_APPS = (
-
+    'masters.apps.display',
 )
 
 THIRD_PARTY_APPS = (
