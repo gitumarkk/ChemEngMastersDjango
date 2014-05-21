@@ -1,0 +1,21 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html lang="en">
+  {% include "header.html" %}
+
+    <body>
+        {% block navbar %}
+            {% include "navbar.html" %}
+        {% endblock navbar %}
+
+        {% block navbar_2 %}
+        {% endblock navbar_2 %}
+
+        {% block content %}
+
+        {% endblock content %}
+
+        {% include "footer.html" %}
+    </body>
+</html>

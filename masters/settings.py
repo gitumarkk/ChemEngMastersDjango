@@ -40,6 +40,7 @@ INSTALLED_APPS = (
 
 PROJECT_APPS = (
     'masters.apps.display',
+    'masters.calculations',
 )
 
 THIRD_PARTY_APPS = (
@@ -94,3 +95,33 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
 STATIC_URL = '/static/'
+
+TEMPLATE_DIRS = (
+    os.path.join(BASE_DIR, "masters", "templates"),
+)
+
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, "masters", "static"),
+)
+
+# ========================================================
+# TEST RUNNER CONFIGURATION
+# ========================================================
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
+
+# ========================================================
+# SOUTH TEST CONFIGURATIONS
+# ========================================================
+SKIP_SOUTH_TESTS = True     # Do not run the south tests as part of our
+                            # test suite.
+SOUTH_TESTS_MIGRATE = False  # Do not run the migrations for our tests.
+                             # We are assuming that our models.py are correct
+                             # for the tests and as such nothing needs to be
+                             # migrated.
+
+# Import production settings
+try:
+    from local_settings import *
+except ImportError:
+    pass

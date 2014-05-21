@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load i18n %}
+
+{% block content %}
+
+    {% include "display/includes/simulation-side-nav.html" %}
+
+    <div class="graph-container">
+        <div id="graph-container"></div>
+    </div>
+{% endblock content %}

@@ -1,0 +1,22 @@
+{% load staticfiles %}
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" href="">
+
+    <title>
+        {% block title %}
+            CeBER process Simulation
+        {% endblock title %}
+    </title>
+
+    <!-- Foundation CSS -->
+    <link rel="stylesheet" href= '{% static "css/app.css" %}' />
+    <script src='{% static "bower_components/modernizr/modernizr.js" %}'></script>
+
+    <!-- Custom styles for this template -->
+    <!-- <link href="navbar-static-top.css" rel="stylesheet"> -->
+</head>
