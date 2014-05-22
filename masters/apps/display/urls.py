@@ -15,7 +15,11 @@ urlpatterns = patterns('',
         'masters.apps.display.views.bioleach_reactor',
         name='bioleach_reactor'),
 
-    url(r'^copper_reaction_rates/$',
-        'masters.apps.display.views.copper_reaction_rates',
-        name='copper_reaction_rates'),
+    url(r'^reaction_rates/(?P<rate_type>.+)/$',
+        'masters.apps.display.views.reaction_rates',
+        name='reaction_rates'),
+
+    url(r'^single_reactor/(?P<reactor_type>.+)/$',
+        'masters.apps.display.views.single_reactor',
+        name='single_reactor'),
 )

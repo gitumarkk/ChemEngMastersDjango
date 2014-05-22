@@ -1,0 +1,12 @@
+@import "compass/css3";
+
+.simulation-side-nav {
+    position: fixed;
+    top: 45px;
+    left: 0px;
+    bottom: 0px;
+    @include grid-column(2);
+    padding: 0px 0px;
+    @include single-box-shadow;
+    background-color: $grey3_light;
+}

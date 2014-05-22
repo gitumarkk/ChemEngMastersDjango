@@ -1,0 +1,25 @@
+.graph-container {
+    top: 45px;
+    right:0px;
+    // bottom: 0px;
+    border: 1px solid black;
+    @include grid-column(10);
+    float:right;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: block;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}

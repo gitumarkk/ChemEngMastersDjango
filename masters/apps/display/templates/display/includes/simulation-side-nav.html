@@ -1,9 +1,26 @@
 <div class="row">
     <div class="simulation-side-nav">
-        <ul>
-            <li><a href="#/reactions/biox" data-src="">Reactions Simulation</a></li>
-            <li><a href="#/reactions/chemical" data-src="">Chemical Reactions Simulation</a></li>
-            <li><a href="#" data-src="">Bioxidation Reactor Simulation</a></li>
-        </ul>
+        <dl class="accordion" data-accordion>
+            <dd>
+                <a href="#reaction_rates" data-src="">Reactions Simulation</a>
+                <div id="reaction_rates" class="content">
+                    <ul id="" class="side-nav">
+                        <li><a href="#/reactions/chemical" data-src="">Chemical Reactions Simulation</a></li>
+                        <li><a href="#/reactions/bioxidation" data-src="">Bioxidation Reactor Simulation</a></li>
+                    </ul>
+                </div>
+            </dd>
+
+            <dd>
+                <a href="#reactor_simulation" data-src="">Reactor Simulations</a>
+                <div id="reactor_simulation" class="content">
+                    <ul id="" class="side-nav">
+                        <li><a href="#/reactors/chemical" data-src="">Chemical CSTR Simulation</a></li>
+                        <li><a href="#/reactors/bioxidation" data-src="">Bioxidation CSTR Simulation</a></li>
+                        <li><a href="#/reactors/tanks_in_series" data-src="">Tanks In Series Simulation</a></li>
+                    </ul>
+                </div>
+            </dd>
+        </dl>
     </div>
 </div>

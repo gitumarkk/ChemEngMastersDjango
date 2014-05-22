@@ -54,3 +54,5 @@ docs/_build/
 
 # My Dev Env
 venv
+node_modules
+js/libs

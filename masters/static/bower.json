@@ -1,0 +1,15 @@
+{
+  "name": "foundation-compass-app",
+  "version": "0.0.1",
+  "private": "true",
+  "dependencies": {
+    "foundation": "zurb/bower-foundation",
+    "bourbon": "~4.0.1",
+    "jquery": null,
+    "backbone": null,
+    "underscore": null,
+    "requirejs": null,
+    "d3": null,
+    "neat": "~1.6.0"
+  }
+}

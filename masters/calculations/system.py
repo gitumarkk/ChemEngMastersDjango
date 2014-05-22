@@ -9,7 +9,7 @@ import numpy as np
 
 class System(object):
     def __init__(self):
-        pass
+        self.units = []
 
     def create_reactor(self, reactor, volume, upstream):
         # This will be used to add a reactor to the system
@@ -28,7 +28,7 @@ class System(object):
 
         RANGE = 1000
         for i in range(RANGE):
-            temp = {"_r_Fe_2p": [], "Fe_3p_Fe_2p": [], "step": []}
+            temp = {}
 
             temp_flow = {"flowrate": 1.0,
                         "components": {"C_Fe2_plus": (i * 1.0/RANGE), "C_Fe3_plus": (1 - (i * 1.0/RANGE))}}
@@ -40,11 +40,22 @@ class System(object):
             # Ignore case when C_Fe2_plus is 0
             if not self.reactor.flow_in["components"]["C_Fe2_plus"] == 0:
                 np.seterr(divide='ignore')
-                _r_Fe_2p = self.reactor.reaction()
+                rate_ferrous = self.reactor.reaction()
                 Fe_3p_Fe_2p = np.divide(self.reactor.flow_in["components"]["C_Fe3_plus"], self.reactor.flow_in["components"]["C_Fe2_plus"])
 
-                temp["_r_Fe_2p"] = _r_Fe_2p
+                temp["rate_ferrous"] = rate_ferrous
                 temp["Fe_3p_Fe_2p"] = Fe_3p_Fe_2p
                 temp["step"] = i
                 output.append(temp)
         return output
+
+    def run(self):
+        """
+        output is in the form of [{"reactor": ["", [""]]}]
+        """
+        output = []
+        return output
+
+
+    def update_units(self, unit):
+        self.units.append(unit)

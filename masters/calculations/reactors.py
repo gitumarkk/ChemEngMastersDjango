@@ -9,7 +9,7 @@ class BaseUpStream(object):
     downstream.flow_in = upstream.flow_out
     """
     def __init__(self, flow_out=None):
-        self.flow_out = flow_out or {"flowrate": 1, "components": {"C_Fe2_plus": 0.1, "C_Fe3_plus": 0.2}}
+        self.flow_out = flow_out or {"flowrate": 1, "components": {"ferrous": 0.1, "ferric": 0.2}}
 
     def set_flow_out(self, flow_out):
         self.flow_out = flow_out
@@ -31,7 +31,8 @@ class BatchReactorMixin(object):
 class CSTR(object):
     """
     This class simulates the cases that occur in all reactors.
-    This system uses Fe2+ as the base
+    This system uses Fe2+ as the base for all components reactions,
+    hence all reactions should be set in the basis of it.
     """
     TYPE = "CSTR"
 
@@ -49,32 +50,45 @@ class CSTR(object):
         # # only difference is that the component stream changes
 
         # self.flow_out = flow_out # {"flowrate": 999 /s , components: [(Fe2+, 9 mol/l), (Cu2+, 0.1 mol/l)]}
-        self.components = [] # Array holding the components in the reactor
+        self.components_rate = [] # Array holding the components in the reactor
 
-    def update_component_stream(self, component):
-        self.components.append(component)
+    def update_component_rate(self, component):
+        """
+        Function that updates the components rate objects in the reactor
+        """
+        self.components_rate.append(component)
 
     def reaction(self):
-        C_x = 1
-        q_spec_growth_rate = 1
+        cummulative_rate_ferrous = 0  # Rate is dependent on prevoius concentrations and not
+        cummulative_rate_ferric = 0
 
-        C_Fe2_plus = self.flow_in["components"]["C_Fe2_plus"]
-        C_Fe3_plus = self.flow_in["components"]["C_Fe3_plus"]
+        cstr_data = {}  # specific rates of the individual op
 
-        temp_C_x_q_spec_growth_rate = 1.2e-5 # (mol.m^-3.s^-1)
-        K = 5e-3
+        # previous rates
+        for component in self.components_rate:
+            rate_ferrous, rate_ferric, metal_conc = component.run()
 
-        r_Fe2_plus = (temp_C_x_q_spec_growth_rate) / (1 + (K * np.divide(C_Fe3_plus, C_Fe2_plus)))
+            cummulative_rate_ferrous = cummulative_rate_ferrous + rate_ferrous
+            cummulative_rate_ferric = cummulative_rate_ferric + rate_ferric
 
-        self.update_flow_out_after_reaction(r_Fe2_plus)
-        return r_Fe2_plus
+            # Assuming all rates occur once in the system
+            cstr_data["component"] = {"rate_ferrous": rate_ferrous,
+                                        "rate_ferric": rate_ferric,
+                                        "metal_conc": metal_conc,
+                                        "name": component.metal_name}
 
-    def update_flow_out_after_reaction(self, r_Fe2_plus):
-        C_Fe2_plus = self.flow_in["components"]["C_Fe2_plus"] + r_Fe2_plus
-        C_Fe3_plus = self.flow_in["components"]["C_Fe3_plus"] - r_Fe2_plus
+        cstr_data["total_rate_ferrous"] = cummulative_rate_ferrous
+        cstr_data["total_rate_ferric"] = cummulative_rate_ferric
+
+        return cstr_data
+        # return r_Fe2_plus
+
+    def update_components_flow_out_after_reaction(self, rates):
+        ferrous = self.flow_in["components"]["ferrous"] + rates["total_rate_ferrous"]
+        ferric = self.flow_in["components"]["ferric"] + rates["total_rate_ferric"]
 
         self.flow_out = {"flowrate": self.flow_in["flowrate"],
-                        "components": {"C_Fe2_plus": C_Fe2_plus, "C_Fe3_plus": C_Fe3_plus}}
+                        "components": {"ferrous ": ferrous , "ferric": ferric}}
 
     def set_upstream(self, upstream):
         """
@@ -94,3 +108,8 @@ class CSTR(object):
         Function to set the outward flow rate according to the upstream
         """
         self.flow_out = self.flow_in
+
+    def run(self):
+        cstr_data = self.reaction()
+        self.update_components_flow_out_after_reaction(cstr_data)
+        return {"cstr_data": cstr_data, "flow_out": self.flow_out}
