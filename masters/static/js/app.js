@@ -16,6 +16,7 @@ require.config({
         },
         foundation: {
             deps: ['jquery'],
+            exports: 'Founation'
         },
         'foundation.accordion': {
             deps: ['jquery']
@@ -31,22 +32,19 @@ require.config({
         underscore: 'libs/underscore/underscore',
         backbone: 'libs/backbone/backbone',
         foundation: 'libs/foundation/js/foundation.min',
-        "foundation.accordion" : 'libs/foundation/js/foundation/foundation.accordion',
+        // "foundation.accordion" : 'libs/foundation/js/foundation/foundation.accordion',
         text: 'libs/requirejs-text/text'
     }
 });
 
-require(['jquery', 'foundation', 'foundation.accordion'], function($) {
+require(['jquery', 'foundation'], function($) {
   $(document).foundation();
 });
 
 require(['jquery', "backbone", "routers/router", "views/GraphView"], function($, Backbone, AppRouter, GraphView) {
-
-
     $(document).ready(function() {
         Backbone.history.start();
         var app_router = new AppRouter();
+        console.log("ready");
     });
-
-
 });

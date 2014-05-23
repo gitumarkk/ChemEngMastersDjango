@@ -58,7 +58,6 @@ def single_reactor(request, reactor_type=None):
 
     if reactor_type == "chemical":
         data = run_chemical_single_reactor()
-
     json_data = dumps(data)
     return HttpResponse(json_data, content_type='application/json')
 
@@ -105,25 +104,27 @@ def run_chemical_single_reactor():
     data = []
 
     volume = 1 # m3
-    copper_conc = 2 / 63.5
-    ferric_conc = 9 / 55.85
+    copper_conc = 4 / 63.5
 
     upstream = reactors.BaseUpStream()
     cstr = reactors.CSTR(volume, upstream)
     metal_rate = reactions.MetalDissolutionRate(constants.COPPER,
                                                  copper_conc,
-                                                 ferric_conc,
+                                                 upstream.flow_out["components"]["ferric"],
                                                  system=constants.CONTINUOUS)
     cstr.update_component_rate(metal_rate)
     i = 0
-    while metal_rate.ferric > 1e-9 and metal_rate.metal_conc > 1e-9:
+    # metal_rate.ferric > 1e-9 and metal_rate.metal_conc > 1e-9
+    while True:
         temp = {}
 
         cstr_data = cstr.run()
+        print metal_rate.ferric, metal_rate.metal_conc
+        if metal_rate.ferric < 1e-9 or metal_rate.metal_conc < 1e-9:
+            break
+
         temp = {"step": i}
-
         temp.update(cstr_data)
-
         data.append(temp)
 
         i = i + 1

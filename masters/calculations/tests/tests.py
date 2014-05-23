@@ -40,7 +40,7 @@ class TestReactors(TestCase):
 
 class TestRunningSystem(TestCase):
     def setUp(self):
-        self.volume_cstr = 10 #
+        self.volume_cstr = 1 # m^3
         self.upstream_flow_out = {"flowrate": 1, "components": {"C_Fe2_plus": 0.1, "C_Fe3_plus": 0.2}}
 
     def test_system_runs_okay(self):

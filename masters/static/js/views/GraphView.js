@@ -6,8 +6,10 @@ define(["jquery", "underscore", "backbone", "d3"], function($, _, Backbone, d3){
 
         initialize: function(options){
             this.rate = options.rate;
+            this.reactor = options.reactor;
             this.src = options.src;
             this.$el.html("");
+            console.log(this.reactor);
         },
 
         render: function (){
@@ -15,6 +17,10 @@ define(["jquery", "underscore", "backbone", "d3"], function($, _, Backbone, d3){
                 this.plotGraphBiox(this.src);
             } else if (this.rate === "chemical"){
                 this.plotGraphChemical(this.src);
+            }
+
+            if (this.reactor === "chemical"){
+                this.plotReactorChemical(this.src);
             }
         },
 
@@ -151,6 +157,144 @@ define(["jquery", "underscore", "backbone", "d3"], function($, _, Backbone, d3){
                       .datum(data)
                       .attr("class", "line")
                       .attr("d", line);
+            });
+        },
+
+      plotReactorChemical : function (src) {
+            var x_variable, y_variable;
+            // x_variable = "step";
+            // y_variable = "step";
+
+            var graph_container = d3.select(this.el);
+
+            var parent_width = parseInt(graph_container.style('width'), 10);
+            var margin = {top: 20, right: 20, bottom: 50, left: 100},
+                width = parent_width - margin.left - margin.right,
+                height = 500 - margin.top - margin.bottom;
+
+            var x = d3.scale.linear().range([0, width]);
+            var y = d3.scale.linear().range([height, 0]);
+
+            var xAxis = d3.svg.axis()
+                .scale(x)
+                .ticks(10)
+                .orient("bottom");
+
+            var yAxis = d3.svg.axis()
+                .scale(y)
+                .ticks(5)
+                .orient("left");
+
+            var metal = d3.svg.line()
+                .x(function(d) { return x(d.x); })
+                .y(function(d) { return y(d.metal); });
+
+            var ferrous_out = d3.svg.line()
+                .x(function(d) { return x(d.x); })
+                .y(function(d) { return y(d.ferrous_out); });
+
+            var ferrous_in = d3.svg.line()
+                .x(function(d) { return x(d.x); })
+                .y(function(d) { return y(d.ferrous_in); });
+
+            var svg = graph_container.append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            d3.json(src, function(error, data){
+                data.forEach(function(d){
+                    d.x = + d.step / 60 ;
+                    d.metal = + d.cstr_data.components.metal_conc;
+                    // d.ferrous_in= + d.flow_out.component.ferrous;
+                    d.ferrous_out = + d.flow_out.components.ferrous;
+                });
+
+                x.domain(d3.extent(data, function(d) { return d.x; }));
+                y.domain(d3.extent(data, function(d) { return d.metal; }));
+
+                svg.append("path")
+                      .datum(data)
+                      .attr("class", "line")
+                      .attr("d", metal);
+
+                svg.append("g")
+                  .attr("class", "x axis")
+                  .attr("transform", "translate(0," + height + ")")
+                  .call(xAxis)
+                  .append("text")
+                  .attr("y", 20)
+                  .attr("dy", ".71em")
+                  .style("text-anchor", "start")
+                  .text("Time (s)");
+
+                svg.append("g")
+                  .attr("class", "y axis")
+                  .call(yAxis)
+                  .append("text")
+                  .attr("transform", "rotate(-90)")
+                  .attr("y", 6)
+                  .attr("dy", ".71em")
+                  .style("text-anchor", "end")
+                  .text("[Copper mol/l]");
+
+                // Adding labels
+                // svg.append("text")
+                //   .attr("transform", "translate(" + (width+3) + "," + y(data[0].ferrous_out) + ")")
+                //   .attr("dy", ".35em")
+                //   .attr("text-anchor", "start")
+                //   .style("fill", "red")
+                //   .text("Ferrous Out");
+
+                // svg.append("text")
+                //   .attr("transform", "translate(" + (width+3) + "," + y(data[0].metal) + ")")
+                //   .attr("dy", ".35em")
+                //   .attr("text-anchor", "start")
+                //   .style("fill", "steelblue")
+                //   .text("Metal Concentration");
+
+
+
+                var svg_2 = graph_container.append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .append("g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+                y.domain(d3.extent(data, function(d) { return d.ferrous_out; }));
+
+                svg_2.append("path")
+                      .datum(data)
+                      .attr("class", "line")
+                      .style("stroke", "red")
+                      .attr("d", ferrous_out);
+
+
+
+                svg_2.append("g")
+                  .attr("class", "x axis")
+                  .attr("transform", "translate(0," + height + ")")
+                  .call(xAxis)
+                  .append("text")
+                  .attr("y", 20)
+                  .attr("dy", ".71em")
+                  .style("text-anchor", "start")
+                  .text("Time (s)");
+
+                svg_2.append("g")
+                  .attr("class", "y axis")
+                  .call(yAxis)
+                  .append("text")
+                  .attr("transform", "rotate(-90)")
+                  .attr("y", 6)
+                  .attr("dy", ".71em")
+                  .style("text-anchor", "end")
+                  .text("[Ferrous Concentration mol/l]");
+
+
+
+              // APPEND DOM USING D# or call different Vview from here
             });
         }
     });

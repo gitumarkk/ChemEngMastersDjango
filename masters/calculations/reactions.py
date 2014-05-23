@@ -40,16 +40,20 @@ class MetalDissolutionRate(object):
         a = 0.5
         b = 0.64
         rate_ferric = K * np.power(self.metal_conc, a) * np.power(self.ferric, b)
-        self.update_reactant_concentrations(rate_ferric)
+        self.update_metal_reactant_concentration(rate_ferric)
         return rate_ferric
 
-    def update_reactant_concentrations(self, rate_ferric):
-        self.metal_conc += rate_ferric/2  # 2 for now beacuse of copper
+    def update_metal_reactant_concentration(self, rate_ferric):
+        # Problem here is thar for a multi COMPONENT SYSTEM NEED TO UPDATE
+        # CONCENTRATIONS FROM OUTSIDE THE SYSTEM
+        self.metal_conc += rate_ferric / 2  # 2 for now beacuse of copper
 
-        if self.system == constants.BATCH:
-            # This is only updated in teh reactor
-            self.ferric += rate_ferric
-
+    def update_global_ferric_concentrations(self, ferric):
+        """
+        As the ferric concentration is governed by
+        [Fe2+]_out = -rate_ferrous / Dilution rate + [Fe2+]_in
+        """
+        self.ferric = ferric
 
     def stoichiometry(self):
         """
@@ -67,6 +71,8 @@ class MetalDissolutionRate(object):
     def run(self):
         if self.metal_name == constants.COPPER:
             rate_ferric = self.copper_metal_powder_rate()
-            self.update_reactant_concentrations(rate_ferric)
+
+            # This should not be updated here but by the actual reactor
+            self.update_metal_reactant_concentration(rate_ferric)
             rate_ferrous = self.ferric_to_ferrous(rate_ferric)
             return rate_ferrous, rate_ferric, self.metal_conc
