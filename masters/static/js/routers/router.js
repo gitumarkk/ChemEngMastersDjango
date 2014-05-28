@@ -15,6 +15,7 @@ define([
             // 'reactionRates/:copper': "reactionRates",
             'reactions/:action': "reactionRates",
             'reactors/:action': "reactors",
+            'system/:action': "system",
         },
 
         reactionRates : function(action){
@@ -23,6 +24,12 @@ define([
         },
         reactors: function(action){
             var graph = new GraphView({"reactor": action, src: "/single_reactor/" + action + "/"});
+            graph.render();
+        },
+        system: function(action){
+            console.log("system");
+            console.log(action);
+            var graph = new GraphView({"system": action, src: "/system_run/" + action + "/"});
             graph.render();
         }
     });

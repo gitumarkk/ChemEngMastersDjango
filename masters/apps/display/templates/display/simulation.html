@@ -5,6 +5,31 @@
 {% block content %}
     {% include "display/includes/simulation-side-nav.html" %}
     <div class="graph-container">
-        <div id="graph-container"></div>
+        <div id="graph-container" class="large-6 columns"></div>
+
+        <div id="graph-data" class="large-4 columns">
+            <script type="text/template" id="draw-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>step</th>
+                            <th>Copper</th>
+                            <th>Ferric</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <% _.each(data, function(data) { %>
+                          <tr>
+                            <td><%= data.step %></td>
+                            <td><%= data.cstr_data.components.metal_conc %></td>
+                            <td><%= data.flow_out.components.ferrous %></td>
+                          </tr>
+                        <% }); %>
+
+                    </tbody>
+                </table>
+            </script>
+        </div>
     </div>
 {% endblock content %}

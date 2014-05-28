@@ -16,6 +16,35 @@ class TestReactors(TestCase):
     def test_running_cstr_reactor_with_simplified_hansford(self):
         upstream = reactors.BaseUpStream()
         cstr = reactors.CSTR(self.volume, upstream)
+
+        biox_rate = reactions.BioxidationRate(self.ferric_conc)
+
+        cstr.update_component_rate(biox_rate)
+        self.assertIn(biox_rate, cstr.components_rate)
+
+        self.assertEqual(cstr.flow_in, upstream.flow_out)
+        self.assertEqual(cstr.flow_in, cstr.flow_out)
+        self.assertIsNotNone(cstr.flow_in)
+
+        output = cstr.run()
+
+        self.assertIn('total_rate_ferric', output["cstr_data"])
+        self.assertIn('total_rate_ferrous', output["cstr_data"])
+        self.assertEqual(output["cstr_data"]['total_rate_ferrous'], -output["cstr_data"]['total_rate_ferric'])
+
+        self.assertEqual(output["cstr_data"]['total_rate_ferrous'], output["cstr_data"]["components"]["rate_ferrous"])
+        self.assertNotEqual(output["flow_out"]["components"]["ferric"], upstream.flow_out["components"]["ferric"])
+
+        self.assertEqual(output["flow_out"]["components"]["ferric"], cstr.flow_out["components"]["ferric"])
+
+        # Assert that the change in ferric is equal to change in rate
+        self.assertAlmostEqual(output["flow_out"]["components"]["ferric"] - cstr.flow_in["components"]["ferric"],
+                         output["cstr_data"]['total_rate_ferric']/cstr.get_dilution_rate()) # Almost equal due to floating point errors
+
+
+    def test_running_cstr_reactor_with_simplified_chemical_equation(self):
+        upstream = reactors.BaseUpStream()
+        cstr = reactors.CSTR(self.volume, upstream)
         copper_rate = reactions.MetalDissolutionRate(constants.COPPER,
                                                      self.copper_conc,
                                                      self.ferric_conc,
@@ -30,32 +59,80 @@ class TestReactors(TestCase):
 
         output = cstr.run()
 
-        self.assertIn('total_rate_ferric', output)
-        self.assertIn('total_rate_ferrous', output)
-        self.assertIn('Cu', output)
+        self.assertIn('total_rate_ferric', output["cstr_data"])
+        self.assertIn('total_rate_ferrous', output["cstr_data"])
 
-        self.assertEqual(output['total_rate_ferrous'], -output['total_rate_ferric'])
-        self.assertEqual(output["Cu"]['rate_ferrous'], -output["Cu"]['rate_ferric'])
+        self.assertEqual('Cu', output["cstr_data"]["components"]["name"])
+        self.assertEqual(output["cstr_data"]['total_rate_ferrous'], -output["cstr_data"]['total_rate_ferric'])
+        self.assertEqual(output["cstr_data"]["components"]['rate_ferrous'], -output["cstr_data"]["components"]['rate_ferric'])
+
+        self.assertEqual(output["cstr_data"]['total_rate_ferrous'], output["cstr_data"]["components"]["rate_ferrous"])
+        self.assertNotEqual(output["flow_out"]["components"]["ferric"], upstream.flow_out["components"]["ferric"])
+
+        self.assertEqual(output["flow_out"]["components"]["ferric"], cstr.flow_out["components"]["ferric"])
+
+        # Assert that the change in ferric is equal to change in rate
+        self.assertAlmostEqual(output["flow_out"]["components"]["ferric"] - cstr.flow_in["components"]["ferric"],
+                         output["cstr_data"]['total_rate_ferric']/cstr.get_dilution_rate()) # Almost equal due to floating point errors
 
 
 class TestRunningSystem(TestCase):
     def setUp(self):
         self.volume_cstr = 1 # m^3
-        self.upstream_flow_out = {"flowrate": 1, "components": {"C_Fe2_plus": 0.1, "C_Fe3_plus": 0.2}}
+        self.copper_conc = 2 / 63.5  #mol.m^-3
 
-    def test_system_runs_okay(self):
+    def run_equation(self):
+        pass
+
+    def test_system_runs_okay_with_tanks_in_series_model(self):
+        # BaseUpstream -> Bioxidation -> CSTR ->
         sys = system.System()
 
-        upstream = reactors.BaseUpStream(flow_out=self.upstream_flow_out)
-        sys.create_reactor(reactors.CSTR, self.volume_cstr, upstream)
+        upstream = reactors.BaseUpStream()
 
+        # Create Bioxidation Reactor
+        biox_cstr = sys.create_reactor(reactors.CSTR, self.volume_cstr, upstream)
+
+        biox_rate = reactions.BioxidationRate()
+
+        biox_cstr.update_component_rate(biox_rate)
+        self.assertEqual(biox_rate, biox_cstr.components_rate[0])
+
+        # Update component stream
         # Asserts
-        self.assertEqual(sys.reactor.volume, self.volume_cstr)
-        self.assertEqual(sys.reactor.flow_in, self.upstream_flow_out)
-        self.assertEqual(sys.reactor.flow_in, sys.reactor.flow_out)
+        self.assertEqual(biox_cstr.volume, self.volume_cstr)
+        self.assertEqual(biox_cstr.flow_in, upstream.flow_out)
+        self.assertEqual(biox_cstr.flow_in, biox_cstr.flow_out)
+
+        self.assertEqual(len(sys.units), 1)
+        self.assertEqual(sys.units[0], biox_cstr)
+
+        # Create Chemical Reactor
+        chem_cstr = sys.create_reactor(reactors.CSTR, self.volume_cstr, biox_cstr)
+
+        # Update component stream
+        copper_rate = reactions.MetalDissolutionRate(constants.COPPER,
+                                                     self.copper_conc,
+                                                     system=constants.CONTINUOUS)
+        chem_cstr.update_component_rate(copper_rate)
+        self.assertEqual(copper_rate.ferric, chem_cstr.ferric)
+        self.assertEqual(copper_rate, chem_cstr.components_rate[0])
+
+        # Assetrs
+        self.assertEqual(len(sys.units), 2)
+        self.assertEqual(sys.units[1], chem_cstr)
+
+        self.assertEqual(chem_cstr.upstream, biox_cstr)
+        self.assertEqual(chem_cstr.flow_in, biox_cstr.flow_out)
 
         # Running the reactor
-        output = sys.run()
+        output_1 = sys.run()
+        self.assertEqual(len(output_1), 2)
+        # print output_1
+
+        output_2 = sys.run()
+        self.assertEqual(len(output_2), 2)
+        # print output_2
 
 
 class TestReactionRates(TestCase):

@@ -31,7 +31,7 @@ class TestViews(TestCase):
         self.assertEqual(item_0['cstr_data']["components"]["name"], "Cu")
         self.assertEqual(item_0['cstr_data']["components"]["rate_ferrous"], -item_0['cstr_data']["components"]["rate_ferric"])
 
-        print response_json[len(response_json)-3:]
+        # print response_json[len(response_json)-3:]
 
     def test_get_copper_reaction_rates(self):
         url = reverse("reaction_rates", kwargs={"rate_type": "chemical"})
@@ -51,3 +51,17 @@ class TestViews(TestCase):
         item_0 = response_json[0]
         self.assertIn("ferric_ferrous", item_0)
         self.assertIn("rate_ferrous", item_0)
+
+    def test_system_with_tanks_in_series(self):
+        url = reverse("system_run", kwargs={"system_type": "tanks_in_series"})
+
+        response = self.client.get(url, follow=True)
+        response_json = json.loads(response.content)
+        item_0 = response_json[0]
+
+        self.assertIn("chemical", item_0)
+        self.assertIn("bioxidation", item_0)
+        self.assertIn("step", item_0)
+
+        self.assertIn("cstr_data", item_0["chemical"])
+        self.assertIn("total_rate_ferric", item_0["chemical"]["cstr_data"])

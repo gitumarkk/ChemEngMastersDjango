@@ -6,9 +6,13 @@ class BioxidationRate(object):
     """
     The initial rate assumes a CSTR
     """
-    def __init__(self, ferric_initial, ferrous_initial):
-        self.ferric = ferric_initial
-        self.ferrous = ferrous_initial
+    def __init__(self, ferric_initial=None, ferrous_initial=None):
+        self.ferric = ferric_initial or 0.
+        self.ferrous = ferrous_initial or 0.
+        self.reactant_name = "Bacteria"
+
+    def __unicode__(self):
+        return u"BIOX"
 
     def inhibited(self):
         pass
@@ -22,16 +26,26 @@ class BioxidationRate(object):
         rate_ferrous = (temp_C_x_q_spec_growth_rate) / (1 + (K * np.divide(self.ferric, self.ferrous)))
         return rate_ferrous
 
-    def update_reactant_concentrations(self, ferric, ferrous):
+    def update_global_reactant_concentrations(self, ferric, ferrous):
         self.ferric = ferric
         self.ferrous = ferrous
 
+    def ferric_to_ferrous(self, rate_ferric_or_ferrous):
+        """
+        Converts the ferric rate to ferrous rate
+        """
+        return rate_ferric_or_ferrous * (-1)
+
+    def run(self):
+        rate_ferrous = self.simplified_hansford()
+        rate_ferric = self.ferric_to_ferrous(rate_ferrous)
+        return rate_ferrous, rate_ferric, 0
 
 class MetalDissolutionRate(object):
     def __init__(self, metal_name, metal_initial, initial_ferric=None, system=None):
-        self.metal_name = metal_name
+        self.reactant_name = metal_name
         self.metal_conc = metal_initial
-        self.ferric = initial_ferric
+        self.ferric = initial_ferric or 0.
         self.system = system or constants.BATCH
 
     def copper_metal_powder_rate(self):
@@ -46,14 +60,15 @@ class MetalDissolutionRate(object):
     def update_metal_reactant_concentration(self, rate_ferric):
         # Problem here is thar for a multi COMPONENT SYSTEM NEED TO UPDATE
         # CONCENTRATIONS FROM OUTSIDE THE SYSTEM
-        self.metal_conc += rate_ferric / 2  # 2 for now beacuse of copper
+        self.metal_conc = self.metal_conc + rate_ferric / 2.  # 2 for now beacuse of copper
 
-    def update_global_ferric_concentrations(self, ferric):
+    def update_global_reactant_concentrations(self, ferric, ferrous):
         """
         As the ferric concentration is governed by
         [Fe2+]_out = -rate_ferrous / Dilution rate + [Fe2+]_in
         """
         self.ferric = ferric
+        self.ferrous = ferrous
 
     def stoichiometry(self):
         """
@@ -69,7 +84,7 @@ class MetalDissolutionRate(object):
         return rate_ferric * (-1)
 
     def run(self):
-        if self.metal_name == constants.COPPER:
+        if self.reactant_name == constants.COPPER:
             rate_ferric = self.copper_metal_powder_rate()
 
             # This should not be updated here but by the actual reactor

@@ -17,7 +17,9 @@ class System(object):
         volume = volume
 
         # upstream = reactors.BaseUpStream()
-        self.reactor = reactor(volume, upstream)
+        reactor = reactor(volume, upstream)
+        self.update_units(reactor)
+        return reactor
 
     def run_system(self):
         """
@@ -49,13 +51,17 @@ class System(object):
                 output.append(temp)
         return output
 
+    def update_units(self, unit):
+        # Can be a reactor, pump or whatever
+        self.units.append(unit)
+
     def run(self):
         """
         output is in the form of [{"reactor": ["", [""]]}]
+        Assuming an ordered list where the reactors in the list is in the order it was created
         """
-        output = []
+        # for unit in self.units:
+        #     unit.run()
+        # import ipdb; ipdb.set_trace()
+        output = [unit.run() for unit in self.units]
         return output
-
-
-    def update_units(self, unit):
-        self.units.append(unit)

@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 
 # Project
-from masters.calculations.system import System
+from masters.calculations import system
 from masters.calculations import reactors
 from masters.calculations import reactions
 from masters.calculations import constants
@@ -61,6 +61,15 @@ def single_reactor(request, reactor_type=None):
     json_data = dumps(data)
     return HttpResponse(json_data, content_type='application/json')
 
+def system_run(request, system_type=None):
+    print "started"
+    data = []
+    if system_type == "tanks_in_series":
+        data = tanks_in_series()
+    json_data = dumps(data)
+
+    print "complete"
+    return HttpResponse(json_data, content_type='application/json')
 
 def run_copper_reaction_rates():
     copper_conc = 0.064
@@ -88,11 +97,11 @@ def run_bioxidation_raction_rates_simulation():
         ferric = (i * 1.0/RANGE)
         ferrous = (1 - (i * 1.0/RANGE))
 
-        biox_reaction.update_reactant_concentrations(ferric, ferrous)
+        biox_reaction.update_global_reactant_concentrations(ferric, ferrous)
 
         if not ferric == 0: # Avoid division by zero error
             np.seterr(divide='ignore')
-            rate_ferrous = biox_reaction.simplified_hansford()
+            rate_ferrous, rate_ferric, metal_conc = biox_reaction.run()
 
             ferric_ferrous = np.divide(ferric, ferrous)
 
@@ -119,7 +128,7 @@ def run_chemical_single_reactor():
         temp = {}
 
         cstr_data = cstr.run()
-        print metal_rate.ferric, metal_rate.metal_conc
+        # print metal_rate.ferric, metal_rate.metal_conc
         if metal_rate.ferric < 1e-9 or metal_rate.metal_conc < 1e-9:
             break
 
@@ -129,4 +138,40 @@ def run_chemical_single_reactor():
 
         i = i + 1
 
+    return data
+
+def tanks_in_series():
+    data = []
+    biox_volume = 100
+    chem_volume = 0.5
+    copper_conc = 2 / 63.5  # mol.m^-3
+    # Initializing the system
+    sys = system.System()
+
+    # Setting up the biox reactor
+    upstream = reactors.BaseUpStream()
+    biox_rate = reactions.BioxidationRate()
+    biox_cstr = sys.create_reactor(reactors.CSTR, biox_volume, upstream)
+    biox_cstr.update_component_rate(biox_rate)
+
+    # Setting up the Chemical Reactor
+    copper_rate = reactions.MetalDissolutionRate(constants.COPPER,
+                                                copper_conc,
+                                                system=constants.CONTINUOUS)
+    chem_cstr = sys.create_reactor(reactors.CSTR, chem_volume, biox_cstr)
+    chem_cstr.update_component_rate(copper_rate)
+
+    i = 0
+    while True:
+        temp = {}
+        sys_data = sys.run()
+        if copper_rate.metal_conc < 1e-9:
+            break
+
+        temp = {"step": i,
+                "bioxidation": sys_data[0],
+                "chemical": sys_data[1]}
+        data.append(temp)
+
+        i = i + 1
     return data

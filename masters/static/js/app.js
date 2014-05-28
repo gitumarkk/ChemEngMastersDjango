@@ -2,7 +2,8 @@
 'use strict';
 
 require.config({
-  waitSeconds: 0,
+    // baseUrl: "/",
+    waitSeconds: 0,
     shim: {
         underscore: {
             exports: '_'
@@ -41,10 +42,10 @@ require(['jquery', 'foundation'], function($) {
   $(document).foundation();
 });
 
-require(['jquery', "backbone", "routers/router", "views/GraphView"], function($, Backbone, AppRouter, GraphView) {
+require(['jquery', "backbone", "routers/router"], function($, Backbone, AppRouter) {
     $(document).ready(function() {
         Backbone.history.start();
         var app_router = new AppRouter();
-        console.log("ready");
+        alert("ready");
     });
 });

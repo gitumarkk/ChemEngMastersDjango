@@ -22,4 +22,8 @@ urlpatterns = patterns('',
     url(r'^single_reactor/(?P<reactor_type>.+)/$',
         'masters.apps.display.views.single_reactor',
         name='single_reactor'),
+
+    url(r'^system_run/(?P<system_type>.+)/$',
+        'masters.apps.display.views.system_run',
+        name='system_run'),
 )

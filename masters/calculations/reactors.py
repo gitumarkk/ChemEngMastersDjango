@@ -9,10 +9,11 @@ class BaseUpStream(object):
     downstream.flow_in = upstream.flow_out
     """
     def __init__(self, flow_out=None):
-        RATIO = 1
-        ferrous = 9 / 55.85
+        RATIO = 1000
+        # ferrous = 9 / 55.85
+        ferric = 9 / 55.85
         self.flow_out = flow_out or {"flowrate": 1. / (1 * 60),  # m^3 / s
-                                    "components": {"ferrous": ferrous , "ferric": ferrous * RATIO}}
+                                    "components": {"ferrous": ferric/ RATIO , "ferric": ferric}}
 
     def set_flow_out(self, flow_out):
         self.flow_out = flow_out
@@ -43,15 +44,18 @@ class CSTR(object):
         self.volume = volume  # m^3
         self.upstream = upstream  # Setting the upstream unit to allow for extensibility
 
-        # Setting the inwards and outward flow rates
-        self.set_flow_in()
+        self.update_flow_in()  # set the intial flow in to be the same as upstream flow in
         self.set_flow_out_initial()
+
+        self.ferric = self.flow_in["components"]["ferric"]
+        self.ferrous = self.flow_in["components"]["ferrous"]
         self.components_rate = [] # Array holding the components in the reactor
 
     def update_component_rate(self, component):
         """
         Function that updates the components rate objects in the reactor
         """
+        component.update_global_reactant_concentrations(self.ferric, self.ferrous)
         self.components_rate.append(component)
 
     def reaction(self):
@@ -71,20 +75,23 @@ class CSTR(object):
             cstr_data["components"] = {"rate_ferrous": rate_ferrous,
                                         "rate_ferric": rate_ferric,
                                         "metal_conc": metal_conc,
-                                        "name": component.metal_name}
+                                        "name": component.reactant_name}
 
         cstr_data["total_rate_ferrous"] = cummulative_rate_ferrous
         cstr_data["total_rate_ferric"] = cummulative_rate_ferric
 
         return cstr_data
 
-    def update_reactor_ferric_ferrous_concentration(self, cstr_data):
+    def update_reactor_ferric_and_ferrous_concentration(self, cstr_data):
         """
         This updates the total concentrations of ferric and ferrous in system after reaction
 
         As the ferric concentration is governed by
         [Fe2+]_out = -rate_ferrous / Dilution rate + [Fe2+]_in
         """
+
+        # By including the dilution rate after the first step, there is a kink in the graph as there is a large drop in
+        # Ferrous concentration
         self.ferrous = self.flow_in["components"]["ferrous"] + (cstr_data["total_rate_ferrous"] / self.get_dilution_rate())
         self.ferric = self.flow_in["components"]["ferric"] + (cstr_data["total_rate_ferric"] / self.get_dilution_rate())
 
@@ -105,18 +112,11 @@ class CSTR(object):
 
     def update_ferric_concentrations_in_components(self):
         for component in self.components_rate:
-            component.update_global_ferric_concentrations(self.ferric)
+            component.update_global_reactant_concentrations(self.ferric, self.ferrous)
 
-    def set_upstream(self, upstream):
+    def update_flow_in(self):
         """
-        Function to set the upstream component
-        """
-        self.upstream = upstream
-        self.set_flow_in()
-
-    def set_flow_in(self):
-        """
-        Function to set the inwar flow rate according to the upstream
+        Function to set the inward flow rate according to the upstream
         """
         self.flow_in = self.upstream.flow_out
 
@@ -130,15 +130,19 @@ class CSTR(object):
         return self.flow_in["flowrate"] / self.volume
 
     def run(self):
+        # 1) Update the inflow of the system as the upward flow may have changed
+        self.update_flow_in()
+
+        # 2) Run the reatcion
         cstr_data = self.reaction()
 
-        # 1) Update the ferrous and ferric concentration after the reaction
-        self.update_reactor_ferric_ferrous_concentration(cstr_data)
+        # 3) Update the ferrous and ferric concentration of the system after the reaction
+        self.update_reactor_ferric_and_ferrous_concentration(cstr_data)
 
-        # 2) For each component in the reactors update the global ferric concentrations
+        # 4) For each component in the reactors update the global ferric concentrations
         self.update_ferric_concentrations_in_components()
 
-        # 3) Update the flow out stream from the CSTR
+        # 5) Update the flow out stream from the CSTR
         self.update_flow_out_stream()
 
         return {"cstr_data": cstr_data, "flow_out": self.flow_out}
