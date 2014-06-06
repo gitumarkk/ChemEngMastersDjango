@@ -23,7 +23,7 @@ class BioxidationRate(object):
 
         temp_C_x_q_spec_growth_rate = 1.2e-5 # (mol.m^-3.s^-1)
         K = 5e-3
-        rate_ferrous = (temp_C_x_q_spec_growth_rate) / (1 + (K * np.divide(self.ferric, self.ferrous)))
+        rate_ferrous = - (temp_C_x_q_spec_growth_rate) / (1 + (K * np.divide(self.ferric, self.ferrous)))
         return rate_ferrous
 
     def update_global_reactant_concentrations(self, ferric, ferrous):

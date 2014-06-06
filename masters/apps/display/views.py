@@ -142,9 +142,9 @@ def run_chemical_single_reactor():
 
 def tanks_in_series():
     data = []
-    biox_volume = 100
-    chem_volume = 0.5
-    copper_conc = 2 / 63.5  # mol.m^-3
+    biox_volume = 1
+    chem_volume = 1
+    copper_conc = final_copper_conc = 2 / 63.5  # mol.m^-3
     # Initializing the system
     sys = system.System()
 
@@ -161,17 +161,44 @@ def tanks_in_series():
     chem_cstr = sys.create_reactor(reactors.CSTR, chem_volume, biox_cstr)
     chem_cstr.update_component_rate(copper_rate)
 
+    biox_list = []
+    chem_list = []
+
     i = 0
     while True:
-        temp = {}
+        # temp = {}
         sys_data = sys.run()
+
         if copper_rate.metal_conc < 1e-9:
             break
 
-        temp = {"step": i,
-                "bioxidation": sys_data[0],
-                "chemical": sys_data[1]}
-        data.append(temp)
+        final_copper_conc = copper_rate.metal_conc
+
+        sys_data[0].update({"step": i})
+        sys_data[1].update({"step": i})
+
+        biox_list.append(sys_data[0])
+        chem_list.append(sys_data[1])
 
         i = i + 1
-    return data
+    # print ""
+    # print ""
+    # print "BIOXIDATION VOLUME: " + str(biox_volume)
+    # print "BIOXIDATION DILUTION RATE: " + str(biox_cstr.get_dilution_rate())
+    # print "CHEMICAL VOLUME: " + str(chem_volume)
+    # print "CHEMICAL RATE: " + str(chem_cstr.get_dilution_rate())
+    # print "INITIAL FERRIC CONC"
+    # print upstream.flow_out
+
+    _data = {"bioxidation": biox_list,
+             "chemical": chem_list,
+             "summary": {"bioxidation": {"ferric_in": biox_cstr.flow_in["components"]["ferric"],
+                                         "ferrous_in": biox_cstr.flow_in["components"]["ferrous"],
+                                         "volume": biox_volume},
+                         "chemical": {"initial_copper_conc": copper_conc,
+                                       "final_copper_conc": final_copper_conc,
+                                       "volume": chem_volume},
+                        "combined": {"VChem_VBiox": chem_volume/biox_volume}
+                        }
+             }
+    return _data

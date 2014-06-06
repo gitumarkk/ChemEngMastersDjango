@@ -56,12 +56,18 @@ class TestViews(TestCase):
         url = reverse("system_run", kwargs={"system_type": "tanks_in_series"})
 
         response = self.client.get(url, follow=True)
+
         response_json = json.loads(response.content)
-        item_0 = response_json[0]
+        biox_0 = response_json["bioxidation"][0]
+        chem_0 = response_json["chemical"][0]
 
-        self.assertIn("chemical", item_0)
-        self.assertIn("bioxidation", item_0)
-        self.assertIn("step", item_0)
+        # item_0 = response_json[0]
 
-        self.assertIn("cstr_data", item_0["chemical"])
-        self.assertIn("total_rate_ferric", item_0["chemical"]["cstr_data"])
+        self.assertIn("chemical", response_json)
+        self.assertIn("bioxidation", response_json)
+        self.assertIn("summary", response_json)
+
+        self.assertIn("step", biox_0)
+        self.assertIn("step", chem_0)
+
+        self.assertIn("total_rate_ferric", biox_0["cstr_data"])

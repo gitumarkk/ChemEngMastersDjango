@@ -10,6 +10,8 @@
     "underscore": null,
     "requirejs": null,
     "d3": null,
-    "neat": "~1.6.0"
+    "neat": "~1.6.0",
+    "handlebars": "~1.3.0",
+    "requirejs-text": "~2.0.12"
   }
 }

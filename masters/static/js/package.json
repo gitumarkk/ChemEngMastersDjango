@@ -1,0 +1,33 @@
+{
+  "name": "bunchcut",
+  "version": "0.0.1",
+  "directories": {
+    "lib": "./libs",
+    "bin": "./bin",
+    "vendor": "./vendor"
+  },
+  "main": "app.js",
+  "author": "Mark Gituma <gitumarkk@gmail.com>",
+  "engines": [
+    "node"
+  ],
+  "scripts": {
+    "test": "test.config"
+  },
+  "description": ".",
+  "keywords": [
+    "skeleton",
+    "mocha"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "grunt": "~0.4.5",
+    "chai": "~1.9.1",
+    "sinon": "~1.9.1",
+    "mocha": "~1.18.2",
+    "grunt-contrib-watch": "~0.6.1",
+    "grunt-shell": "~0.7.0",
+    "grunt-mocha": "~0.4.10",
+    "grunt-contrib-connect": "~0.7.1"
+  }
+}

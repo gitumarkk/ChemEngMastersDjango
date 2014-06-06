@@ -1,0 +1,56 @@
+<div id="system-setup"></div>
+<div id="system-equations"></div>
+
+<div id="reactor-data">
+    <div class="combined-data">
+        <h2>Overall Data</h2>
+        <table>
+            <tbody>
+                <tr>
+                    <td>Volume Chemical / Volume Bioxidation </td>
+                    <td> {{{ combined.VChem_VBiox }}} </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="biox-data">
+        <h2>Bioxidation Data</h2>
+        <table>
+            <tbody>
+                <tr>
+                    <td> Ferric Concentration In (moles.m-3.s-1) </td>
+                    <td> {{{ bioxidation.ferric_in }}} </td>
+                </tr>
+
+                <tr>
+                    <td> Ferrous Concentration In (moles.m-3.s-1)</td>
+                    <td> {{{ bioxidation.ferrous_in }}} </td>
+                </tr>
+                <tr>
+                    <td>Reactor Volume</td>
+                    <td> {{{ bioxidation.volume }}} </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="chem-data">
+        <h2>Chemical Data</h2>
+        <table>
+            <tbody>
+                <tr>
+                    <td> Initial Copper (moles.m-3) </td>
+                    <td> {{{ chemical.initial_copper_conc }}} </td>
+                </tr>
+
+                <tr>
+                    <td> Final Copper (moles.m-3) </td>
+                    <td> {{{ chemical.final_copper_conc }}} </td>
+                </tr>
+                <tr>
+                    <td>Reactor Volume</td>
+                    <td> {{{ chemical.volume }}} </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
