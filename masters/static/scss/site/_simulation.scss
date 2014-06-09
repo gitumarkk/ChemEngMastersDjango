@@ -1,25 +1,40 @@
-.graph-container {
+#layout {
     top: 45px;
     right:0px;
-    // bottom: 0px;
-    border: 1px solid black;
     @include grid-column(10);
     float:right;
 }
 
+
+// %border-black {
+//     border: 1px solid black;
+// }
+
+// #summary-container{
+//     @extend %border-black;
+// }
+
+// #bioxidation-container{
+//     @extend %border-black;
+// }
+
+// #chemical-container{
+//     @extend %border-black;
+// }
+
 .axis path,
 .axis line {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
 }
 
 .x.axis path {
-  display: block;
+    display: block;
 }
 
 .line {
-  fill: none;
-  stroke: steelblue;
-  stroke-width: 1.5px;
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 1.5px;
 }

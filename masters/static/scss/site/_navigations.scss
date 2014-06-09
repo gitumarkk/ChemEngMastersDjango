@@ -9,4 +9,13 @@
     padding: 0px 0px;
     @include single-box-shadow;
     background-color: $grey3_light;
+    overflow-y: auto;
+
+    .panel{
+        padding: 0px 0px;
+    }
+}
+
+.submenu-top {
+    margin-top:10px;
 }

@@ -1,11 +1,12 @@
 define([
 "backbone",
 "handlebars",
-"text!tpl/summary-view.html",],
+"text!tpl/summary-view.html"],
 function(Backbone, Handlebars, summaryTPL){
     var SummaryView = Backbone.View.extend({
         el: "#summary-container",
         template: summaryTPL,
+        events: "",
 
         initialize: function(options){
             var self = this;

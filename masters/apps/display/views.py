@@ -62,10 +62,22 @@ def single_reactor(request, reactor_type=None):
     return HttpResponse(json_data, content_type='application/json')
 
 def system_run(request, system_type=None):
+    ferricFerrousRatio = request.GET.get('ferricFerrousRatio')
+    chemicalVolume = request.GET.get('chemicalVolume')
+    bioxidationVolume = request.GET.get('bioxidationVolume')
+    totalIron = request.GET.get("totalIron")
+    initialCopper = request.GET.get('initialCopper')
+
     print "started"
     data = []
     if system_type == "tanks_in_series":
-        data = tanks_in_series()
+        sys = system.System(int(bioxidationVolume),
+                            int(chemicalVolume),
+                            int(initialCopper),
+                            int(ferricFerrousRatio),
+                            int(totalIron))
+        sys.build_tanks_in_series()
+        data = sys.run()
     json_data = dumps(data)
 
     print "complete"

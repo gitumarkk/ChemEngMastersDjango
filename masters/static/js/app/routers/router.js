@@ -9,6 +9,8 @@ define([
 
     var AppRouter = Backbone.Router.extend({
         initialize: function(options) {
+            self.current_view = undefined;
+            console.log("initialized");
         },
 
         routes: {
@@ -18,6 +20,7 @@ define([
             'reactors/:action': "reactors",
             // 'system/:action': "system",
             'system/:action': "system",
+            'reset': "reset",
         },
 
         reactionRates : function(action){
@@ -35,18 +38,15 @@ define([
         //     graph.render();
         // },
         system: function(action){
-            // console.log("system");
-            // console.log(action);
-            // var graph = new GraphView({"system": action, src: "/system_run/" + action + "/"});
-            // graph.render();
+            if (self.current_view) {self.current_view.close();}
             var layout = new LayoutView({"type": "system",
                                         "system": action,
                                         src: "/system_run/" + action + "/"});
+            self.current_view = layout;
         },
-        test_layout: function(action){
-            console.log("test initialized");
-            // var LayoutView = require("views/LayoutView");
-            var layout_sytem = new LayoutView();
+        reset: function(){
+            console.log("Reset");
+            if (self.current_view) {self.current_view.close();}
         }
     });
 

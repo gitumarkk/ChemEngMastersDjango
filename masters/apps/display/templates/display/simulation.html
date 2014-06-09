@@ -4,25 +4,67 @@
 
 {% block content %}
     {% include "display/includes/simulation-side-nav.html" %}
-    <div class="graph-container">
-        <div id="graph-container" class="large-6 columns"></div>
+    <div id="layout"></div>
+    <!-- <div class="graph-container">
+        <div class="row">
+            <div id="summary-container"></div>
+        </div>
 
-        <div id="summary-container"></div>
-        <!-- <ul class="ceber-orbit-content" data-orbit>
-            <li data-orbit-slide="headline-1">
-                <div id="summary-container"></div>
-            </li>
-            <li data-orbit-slide="headline-2">
-                <div id="bioxidation-container"></div>
-            </li>
-            <li data-orbit-slide="headline-3">
-                <div id="chemical-container"></div>
-            </li>
-        </ul> -->
+        <div class="row">
+            <div id="bioxidation-container"></div>
+        </div>
 
-        <div id="layout" class="large-6 columns"></div>
+        <div class="row">
+            <div id="chemical-container" class=""></div>
+        </div> -->
 
-        <div id="graph-data" class="large-4 columns">
+
+        <!-- <div id="reactor-carousel" class="carousel slide" data-ride="carousel">
+
+            <ol class="carousel-indicators">
+                <li data-target="#carousel-example-generic" data-slide-to="0" class="active"></li>
+                <li data-target="#carousel-example-generic" data-slide-to="1"></li>
+                <li data-target="#carousel-example-generic" data-slide-to="2"></li>
+              </ol>
+            <div class="carousel-inner">
+                <div class="item">
+                    <div class="row">
+                        <div id="summary-container"></div>
+                    </div>
+                </div>
+
+                <div class="item">
+                    <div class="row">
+                        <div id="bioxidation-container"></div>
+                    </div>
+                </div>
+
+                <div class="item">
+                    <div class="row">
+                        <div id="chemical-container" class=""></div>
+                    </div>
+                </div>
+            </div>
+        </div> -->
+
+        <!-- <div class="orbit-container">
+            <ul class="ceber-orbit-content" data-orbit>
+                <li data-orbit-slide="headline-1">
+                    <div id="summary-container"></div>
+                </li>
+                <li data-orbit-slide="headline-2">
+                    <div id="bioxidation-container"></div>
+                </li>
+                <li data-orbit-slide="headline-3">
+                    <div id="chemical-container"></div>
+                </li>
+            </ul>
+
+            <a class="orbit-prev">Prev <span></span></a>
+            <a class="orbit-next">Next <span></span></a>
+        </div> -->
+
+        <!-- <div id="graph-data" class="large-4 columns">
             <script type="text/template" id="draw-table">
                 <table>
                     <thead>
@@ -46,5 +88,5 @@
                 </table>
             </script>
         </div>
-    </div>
+            </div> -->
 {% endblock content %}

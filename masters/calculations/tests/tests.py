@@ -80,57 +80,64 @@ class TestRunningSystem(TestCase):
     def setUp(self):
         self.volume_cstr = 1 # m^3
         self.copper_conc = 2 / 63.5  #mol.m^-3
+        self.ferric_ferrous = 1000
+        self.total_iron = 9
 
     def run_equation(self):
         pass
 
     def test_system_runs_okay_with_tanks_in_series_model(self):
         # BaseUpstream -> Bioxidation -> CSTR ->
-        sys = system.System()
+        sys = system.System(self.volume_cstr,
+                            self.volume_cstr,
+                            self.copper_conc,
+                            self.ferric_ferrous,
+                            self.total_iron)
 
-        upstream = reactors.BaseUpStream()
+        # upstream = reactors.BaseUpStream()
+        sys.build_tanks_in_series()
 
         # Create Bioxidation Reactor
-        biox_cstr = sys.create_reactor(reactors.CSTR, self.volume_cstr, upstream)
+        # biox_cstr = sys.create_reactor(reactors.CSTR, self.volume_cstr, upstream)
 
-        biox_rate = reactions.BioxidationRate()
+        # biox_rate = reactions.BioxidationRate()
 
-        biox_cstr.update_component_rate(biox_rate)
-        self.assertEqual(biox_rate, biox_cstr.components_rate[0])
+        # biox_cstr.update_component_rate(biox_rate)
+        # self.assertEqual(biox_rate, biox_cstr.components_rate[0])
 
-        # Update component stream
-        # Asserts
-        self.assertEqual(biox_cstr.volume, self.volume_cstr)
-        self.assertEqual(biox_cstr.flow_in, upstream.flow_out)
-        self.assertEqual(biox_cstr.flow_in, biox_cstr.flow_out)
+        # # Update component stream
+        # # Asserts
+        # self.assertEqual(biox_cstr.volume, self.volume_cstr)
+        # self.assertEqual(biox_cstr.flow_in, upstream.flow_out)
+        # self.assertEqual(biox_cstr.flow_in, biox_cstr.flow_out)
 
-        self.assertEqual(len(sys.units), 1)
-        self.assertEqual(sys.units[0], biox_cstr)
+        self.assertEqual(len(sys.units), 2)
+        # self.assertEqual(sys.units[0], biox_cstr)
 
         # Create Chemical Reactor
-        chem_cstr = sys.create_reactor(reactors.CSTR, self.volume_cstr, biox_cstr)
+        # chem_cstr = sys.create_reactor(reactors.CSTR, self.volume_cstr, biox_cstr)
 
-        # Update component stream
-        copper_rate = reactions.MetalDissolutionRate(constants.COPPER,
-                                                     self.copper_conc,
-                                                     system=constants.CONTINUOUS)
-        chem_cstr.update_component_rate(copper_rate)
-        self.assertEqual(copper_rate.ferric, chem_cstr.ferric)
-        self.assertEqual(copper_rate, chem_cstr.components_rate[0])
+        # # Update component stream
+        # copper_rate = reactions.MetalDissolutionRate(constants.COPPER,
+        #                                              self.copper_conc,
+        #                                              system=constants.CONTINUOUS)
+        # chem_cstr.update_component_rate(copper_rate)
+        # self.assertEqual(copper_rate.ferric, chem_cstr.ferric)
+        # self.assertEqual(copper_rate, chem_cstr.components_rate[0])
 
         # Assetrs
-        self.assertEqual(len(sys.units), 2)
-        self.assertEqual(sys.units[1], chem_cstr)
+        # self.assertEqual(len(sys.units), 2)
+        # self.assertEqual(sys.units[1], chem_cstr)
 
-        self.assertEqual(chem_cstr.upstream, biox_cstr)
-        self.assertEqual(chem_cstr.flow_in, biox_cstr.flow_out)
+        # self.assertEqual(chem_cstr.upstream, biox_cstr)
+        # self.assertEqual(chem_cstr.flow_in, biox_cstr.flow_out)
 
         # Running the reactor
-        output_1 = sys.run()
+        output_1 = sys.step()
         self.assertEqual(len(output_1), 2)
         # print output_1
 
-        output_2 = sys.run()
+        output_2 = sys.step()
         self.assertEqual(len(output_2), 2)
         # print output_2
 

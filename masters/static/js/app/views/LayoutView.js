@@ -4,31 +4,57 @@
 * graph views depending on the data returned
 * At the moment it is used in the reactor system and not individual graphs
 */
-define(["jquery",
+define([
 "backbone",
+"handlebars",
 "d3",
 "views/GraphViewUpdate",
-"views/SummaryView"],
-function($, Backbone, d3, GraphView, SummaryView){
+"views/SummaryView",
+"text!tpl/layout.html"
+],
+function(Backbone, Handlebars, d3, GraphView, SummaryView, layoutTPL){
     var LayoutView = Backbone.View.extend({
+        menuTemplate: layoutTPL,
         el: "#layout",
+        events: {
+            "submit #reactor_conditions": "validateForm",
+        },  // Add menu here
         initialize: function(options){
             var self = this;
 
             _.bindAll(self, "assignViews");
-            self.views_list = [];  // Holds an array of the current views
-            console.log("layout initialized");
 
             self.type = options.type;
             self.system = options.system;
             self.src = options.src;
 
-            self.fetchDataWithD3();
+            self.menu_tpl = this.compileTemplate(this.menuTemplate);
+            self.render();
+            // self.fetchDataWithD3();
         },
 
-        fetchDataWithD3: function(){
+        render: function(){
             var self = this;
-            d3.json(self.src, function(error, data){
+            self.$el.html(self.menu_tpl);
+            return self;
+        },
+
+        validateForm: function(ev){
+            var self = this;
+            var params, reactorConditions;
+
+            ev.preventDefault();
+            ev.stopPropagation();
+
+            reactorConditions = $(ev.currentTarget).serializeObject();
+            params =  $.param(reactorConditions);
+
+            this.fetchDataWithD3(self.src+"?"+params);
+        },
+
+        fetchDataWithD3: function(url){
+            var self = this;
+            d3.json(url, function(error, data){
                 self.assignViews(data);
             });
         },
@@ -38,13 +64,25 @@ function($, Backbone, d3, GraphView, SummaryView){
         */
         assignViews: function(data){
             var summary = new SummaryView({data: data.summary});
-            // var bioxidation = new GraphView({});
-            // var chemical = new GraphView();
-        },
+            var bioxidation = new GraphView({data: data.bioxidation,
+                                            section: "bioxidation",
+                                            el: "#bioxidation-container"});
 
-        renderGraphViews: function(data){
-            var ferric_view, summary_view, setup_view, cost_view;
-            ferric_view = new GraphView();
+            var chemical = new GraphView({data: data.chemical,
+                                         section: "chemical",
+                                         el: "#chemical-container"});
+            // $(window).trigger('resize');
+            // $('.carousel').carousel();
+        },
+        compileTemplate: function(_tpl) {
+            var self = this;
+            var tpl;
+            tpl = Handlebars.default.compile(_tpl);
+            return tpl;
+        },
+        close: function() {
+            this.$el.empty();
+            this.unbind();
         }
     });
     return LayoutView;

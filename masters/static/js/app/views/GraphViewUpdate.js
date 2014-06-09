@@ -1,33 +1,75 @@
-define(["jquery", "backbone", "d3", "views/TableView", "utils/d3_graphs"],
-function($, Backbone, d3, TableView, d3_graphs){
+define([
+"backbone",
+"handlebars",
+"d3",
+"utils/d3_graphs",
+"text!tpl/graph-view.html"],
+function(Backbone, Handlebars, d3, d3_graphs, graphTPL){
     'use strict';
 
     var GraphView = Backbone.View.extend({
-        el: "#graph-container",
-        template: "",
+        template: graphTPL,
+        events: "",
 
         initialize: function(options){
-            console.log("Graph Update View Initialized");
-            // _.bindAll(this, "plotSystem");
-            this.graph_obj = d3_graphs.graph_container(this.el);
-        },
-
-        getDataWithD3: function(src){
             var self = this;
-            d3.json(src, function(error, data){
-                self.plotSystem(data);
-            });
+            self.data = options.data;
+            self.section = options.section;
+            self.compiled_template = this.compileTemplate();
+            self.render();
         },
 
         render: function() {
-            return this;
+            var self = this;
+            self.renderTemplate();
+            self.plotGraphs();
+            return self;
         },
-
-        plotGraph: function(){
-
+        renderTemplate: function(){
+            var self = this;
+            var data = {
+                bioxidation : true ? self.section === "bioxidation" : false,
+                chemical : true ? self.section === "chemical" : false,
+                section: self.section
+            };
+            self.$el.html(this.compiled_template(data));
+            return self;
         },
-        populateGraph: function(){
+        plotGraphs: function(){
+            var self = this;
+            self.ferricGraphs();
+            if (self.section === "chemical") {
+                self.copperGraphs();
+            }
+            return self;
+        },
+        ferricGraphs: function(){
+            var self = this;
+            var ferrous_obj = d3_graphs();
+            ferrous_obj.graph_container("#"+self.section+"-ferrous-out");
+            ferrous_obj.add_ferrous_data(self.data);
 
+            var ferric_obj = d3_graphs();
+            ferric_obj.graph_container("#"+self.section+"-ferric-out");
+            ferric_obj.add_ferric_data(self.data);
+            return self;
+        },
+        copperGraphs: function(){
+            var self = this;
+            var copper_obj = d3_graphs();
+            copper_obj.graph_container("#"+self.section+"-copper");
+            copper_obj.append_copper(self.data);
+            return self;
+        },
+        compileTemplate: function() {
+            var self = this;
+            var tpl;
+            tpl = Handlebars.default.compile(self.template);
+            return tpl;
+        },
+        close: function() {
+            this.el$.empty();
+            this.unbind();
         }
     });
 

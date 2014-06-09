@@ -8,12 +8,13 @@ class BaseUpStream(object):
     This class contains the default upstream component, this is so that
     downstream.flow_in = upstream.flow_out
     """
-    def __init__(self, flow_out=None):
-        RATIO = 1000
+    def __init__(self, ferric=None, ferrous=None, ratio=None, flow_out=None):
+        RATIO = ratio or 1000
         # ferrous = 9 / 55.85
-        ferric = 9 / 55.85
+        ferric = ferric or 9 / 55.85
+        ferrous = ferrous or ferric / RATIO
         self.flow_out = flow_out or {"flowrate": 1. / (1 * 60),  # m^3 / s
-                                    "components": {"ferrous": ferric/ RATIO , "ferric": ferric}}
+                                    "components": {"ferrous": ferrous , "ferric": ferric}}
 
     def set_flow_out(self, flow_out):
         self.flow_out = flow_out
