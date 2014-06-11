@@ -52,6 +52,15 @@ function(Backbone, Handlebars, d3, d3_graphs, graphTPL){
             var ferric_obj = d3_graphs();
             ferric_obj.graph_container("#"+self.section+"-ferric-out");
             ferric_obj.add_ferric_data(self.data);
+
+            var ferrous_obj_in = d3_graphs();
+            ferrous_obj_in.graph_container("#"+self.section+"-ferrous-in");
+            ferrous_obj_in.add_ferrous_data_in(self.data);
+
+            var ferric_obj_in = d3_graphs();
+            ferric_obj_in.graph_container("#"+self.section+"-ferric-in");
+            ferric_obj_in.add_ferric_data_in(self.data);
+
             return self;
         },
         copperGraphs: function(){
@@ -67,9 +76,10 @@ function(Backbone, Handlebars, d3, d3_graphs, graphTPL){
             tpl = Handlebars.default.compile(self.template);
             return tpl;
         },
-        close: function() {
-            this.el$.empty();
+        close: function(){
+            this.$el.empty();
             this.unbind();
+            console.log("closing the graphs");
         }
     });
 

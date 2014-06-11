@@ -1,0 +1,43 @@
+<div class="row submenu-top">
+    <div class="large-12 columns">
+        <form id="reactor_conditions" action="">
+            <div class="large-2 columns">
+                Initial Copper (g/l) <input type="text" name="initialCopper" value="2">
+            </div>
+
+            <div class="large-2 columns">
+                Total Iron (g/l) <input type="text" name="totalIron" value="9">
+            </div>
+
+            <div class="large-2 columns">
+                Fe3+ / Fe3+ <input type="text" name="ferricFerrousRatio" value="1000">
+            </div>
+
+            <div class="large-2 columns">
+                Biox Vol (m^3) <input type="text" name="bioxidationVolume" value="1">
+            </div>
+
+            <div class="large-2 columns">
+                Chem Vol (m^3) <input type="text" name="chemicalVolume" value="1">
+            </div>
+
+            <button class="button-orange small right" type="submit"> Submit </button>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    <div class="graph-container">
+        <div class="row">
+            <div id="summary-container"></div>
+        </div>
+
+        <div class="row">
+            <div id="bioxidation-container"></div>
+        </div>
+
+        <div class="row">
+            <div id="chemical-container" class=""></div>
+        </div>
+    </div>
+</div>

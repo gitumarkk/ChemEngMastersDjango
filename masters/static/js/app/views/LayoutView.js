@@ -22,6 +22,10 @@ function(Backbone, Handlebars, d3, GraphView, SummaryView, layoutTPL){
         initialize: function(options){
             var self = this;
 
+            // If anything is in DOM completely close it
+            self.close();
+
+            self.current_views = [];
             _.bindAll(self, "assignViews");
 
             self.type = options.type;
@@ -54,6 +58,7 @@ function(Backbone, Handlebars, d3, GraphView, SummaryView, layoutTPL){
 
         fetchDataWithD3: function(url){
             var self = this;
+            self.closeCurrentViews();
             d3.json(url, function(error, data){
                 self.assignViews(data);
             });
@@ -63,6 +68,8 @@ function(Backbone, Handlebars, d3, GraphView, SummaryView, layoutTPL){
         This view generates the required views based on the data coming form the back end
         */
         assignViews: function(data){
+            var self = this;
+
             var summary = new SummaryView({data: data.summary});
             var bioxidation = new GraphView({data: data.bioxidation,
                                             section: "bioxidation",
@@ -71,6 +78,7 @@ function(Backbone, Handlebars, d3, GraphView, SummaryView, layoutTPL){
             var chemical = new GraphView({data: data.chemical,
                                          section: "chemical",
                                          el: "#chemical-container"});
+            self.current_views.push(summary, bioxidation, chemical);
             // $(window).trigger('resize');
             // $('.carousel').carousel();
         },
@@ -80,9 +88,19 @@ function(Backbone, Handlebars, d3, GraphView, SummaryView, layoutTPL){
             tpl = Handlebars.default.compile(_tpl);
             return tpl;
         },
-        close: function() {
-            this.$el.empty();
-            this.unbind();
+        closeCurrentViews: function(){
+            /* Close all current vies and empty the array */
+            var self = this;
+            console.log("closing all current views");
+            console.log(self.current_views.length);
+            while(self.current_views.length > 0){
+                var _v = self.current_views.pop();
+                _v.close();
+            }
+            console.log(self.current_views.length);
+            // for (var _v in self.current_views){
+            //     _v.close();
+            // }
         }
     });
     return LayoutView;

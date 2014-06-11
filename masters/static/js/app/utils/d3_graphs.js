@@ -30,6 +30,47 @@ define(["d3"], function(d3){
                     .append("g")
                     .attr("transform", "translate(" + self.margin.left + "," + self.margin.top + ")");
 
+                self.color = d3.scale.category10();
+
+                return self;
+            },
+
+            add_ferrous_data_in: function(data){
+                var self = this;
+                // Magic occures in line 7853 of d3.js
+                var ferrous_in = d3.svg.line()
+                                    .x(function(d) { return self.x(d.step); })
+                                        .y(function(d) { return self.y(d.flow_in.components.ferrous); });
+
+                self.x.domain(d3.extent(data, function(d) { return d.step; }));
+                self.y.domain(d3.extent(data, function(d) { return d.flow_in.components.ferrous; }));
+
+                self.svg.append("path")
+                            .datum(data)
+                                .attr("class", "line")
+                                    .style("stroke", "red")
+                                        .attr("d", ferrous_in);
+
+                self.svg.append("g")
+                    .attr("class", "x axis")
+                        .attr("transform", "translate(0," + self.height + ")")
+                            .call(self.xAxis)
+                                .append("text")
+                                    .attr("y", 20)
+                                        .attr("dy", ".71em")
+                                            .style("text-anchor", "start")
+                                                .text("Time (Min)");
+
+                self.svg.append("g")
+                    .attr("class", "y axis")
+                        .call(self.yAxis)
+                            .append("text")
+                                .attr("transform", "rotate(-90)")
+                                    .attr("y", 6)
+                                        .attr("dy", ".71em")
+                                            .style("text-anchor", "end")
+                                                .text("[Ferrous Concentration mol/l]");
+
                 return self;
             },
 
@@ -42,6 +83,14 @@ define(["d3"], function(d3){
 
                 self.x.domain(d3.extent(data, function(d) { return d.step; }));
                 self.y.domain(d3.extent(data, function(d) { return d.flow_out.components.ferrous; }));
+                // Multi Series Plot
+
+                // var sys_data = self.color.domain().map(function(){
+
+                // });
+                // self.y.domain([
+                //               d3.min(data, function(c){return d3.min(c.values, function(v){ return v.temperature; });})
+                //         ]);
 
                 self.svg.append("path")
                             .datum(data)
@@ -57,7 +106,7 @@ define(["d3"], function(d3){
                                     .attr("y", 20)
                                         .attr("dy", ".71em")
                                             .style("text-anchor", "start")
-                                                .text("Time (s)");
+                                                .text("Time (Min)");
 
                 self.svg.append("g")
                     .attr("class", "y axis")
@@ -96,7 +145,47 @@ define(["d3"], function(d3){
                                     .attr("y", 20)
                                         .attr("dy", ".71em")
                                             .style("text-anchor", "start")
-                                                .text("Time (s)");
+                                                .text("Time (Min)");
+
+                self.svg.append("g")
+                    .attr("class", "y axis")
+                        .call(self.yAxis)
+                            .append("text")
+                                .attr("transform", "rotate(-90)")
+                                    .attr("y", 6)
+                                        .attr("dy", ".71em")
+                                            .style("text-anchor", "end")
+                                                .text("[Ferric Concentration mol/m^-3]");
+
+                return self;
+
+            },
+
+            add_ferric_data_in: function (data){
+                var self = this;
+
+                var ferric_in = d3.svg.line()
+                                    .x(function(d) { return self.x(d.step); })
+                                        .y(function(d) { return self.y(d.flow_in.components.ferric); });
+
+                self.x.domain(d3.extent(data, function(d) { return d.step; }));
+                self.y.domain(d3.extent(data, function(d) { return d.flow_in.components.ferric; }));
+
+                self.svg.append("path")
+                            .datum(data)
+                                .attr("class", "line")
+                                    .style("stroke", "red")
+                                        .attr("d", ferric_in);
+
+                self.svg.append("g")
+                    .attr("class", "x axis")
+                        .attr("transform", "translate(0," + self.height + ")")
+                            .call(self.xAxis)
+                                .append("text")
+                                    .attr("y", 20)
+                                        .attr("dy", ".71em")
+                                            .style("text-anchor", "start")
+                                                .text("Time (Min)");
 
                 self.svg.append("g")
                     .attr("class", "y axis")
@@ -136,7 +225,7 @@ define(["d3"], function(d3){
                                     .attr("y", 20)
                                         .attr("dy", ".71em")
                                             .style("text-anchor", "start")
-                                                .text("Time (s)");
+                                                .text("Time (Min)");
 
                 self.svg.append("g")
                     .attr("class", "y axis")

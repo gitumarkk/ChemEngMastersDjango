@@ -2,7 +2,6 @@
 import numpy as np
 
 
-
 class BaseUpStream(object):
     """
     This class contains the default upstream component, this is so that
@@ -18,19 +17,6 @@ class BaseUpStream(object):
 
     def set_flow_out(self, flow_out):
         self.flow_out = flow_out
-
-class CSTRMixin(object):
-    """
-    This class simulates the cases that occur in all reactors
-    """
-    def __init__(self, volume, flow_rate_in, flow_rate_out):
-        self.volume = volume
-        self.flow_rate_in = flow_rate_in
-        self.flow_rate_out = flow_rate_out
-
-
-class BatchReactorMixin(object):
-    pass
 
 
 class CSTR(object):
@@ -146,4 +132,4 @@ class CSTR(object):
         # 5) Update the flow out stream from the CSTR
         self.update_flow_out_stream()
 
-        return {"cstr_data": cstr_data, "flow_out": self.flow_out}
+        return {"cstr_data": cstr_data, "flow_out": self.flow_out, "flow_in": self.flow_in}

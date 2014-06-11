@@ -83,8 +83,33 @@ class TestRunningSystem(TestCase):
         self.ferric_ferrous = 1000
         self.total_iron = 9
 
-    def run_equation(self):
-        pass
+    def test_system_runs_okay_with_cyclic_tanks_model(self):
+        sys = system.System(self.volume_cstr,
+                            self.volume_cstr,
+                            self.copper_conc,
+                            self.ferric_ferrous,
+                            self.total_iron)
+        sys.build_cyclic_tanks()
+
+        self.assertEqual(sys.biox_cstr.upstream, sys.chem_cstr)
+        self.assertEqual(sys.chem_cstr.upstream, sys.biox_cstr)
+
+        sys.step()
+        # As the biox reatcor is only updated in the next step
+        chem_old = sys.chem_cstr.flow_out
+
+        # That Chem Flow in = Biox Flow out
+        self.assertEqual(sys.biox_cstr.flow_out, sys.chem_cstr.flow_in)
+
+        sys.step()
+        # That Biox Flow in = Chem Flow Out (t - 1)
+        self.assertEqual(chem_old, sys.biox_cstr.flow_in)
+        self.assertEqual(sys.biox_cstr.flow_out, sys.chem_cstr.flow_in)
+
+        chem_old = sys.chem_cstr.flow_out
+
+        sys.step()
+        self.assertEqual(chem_old, sys.biox_cstr.flow_in)
 
     def test_system_runs_okay_with_tanks_in_series_model(self):
         # BaseUpstream -> Bioxidation -> CSTR ->

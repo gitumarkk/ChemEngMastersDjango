@@ -1,0 +1,32 @@
+<div class="large-12 columns">
+    {{#if bioxidation }}
+         <h2>Bioxidation CSTR</h2>
+    {{/if}}
+
+    {{#if chemical }}
+         <h2>Chemical CSTR</h2>
+    {{/if}}
+    <hr>
+</div>
+
+<div class="row">
+    <div id="{{{section}}}-ferrous-out" class="large-6 columns">
+        <h4>Ferrous Conc Out of Reactor</h4>
+    </div>
+    <div id="{{{section}}}-ferric-out" class="large-6 columns">
+        <h4>Ferric Conc Out of Reactor</h4>
+    </div>
+    <div id="{{{section}}}-ferrous-in" class="large-6 columns">
+        <h4>Ferrous Conc In Reactor</h4>
+    </div>
+    <div id="{{{section}}}-ferric-in" class="large-6 columns">
+        <h4>Ferric Conc In Reactor</h4>
+    </div>
+    <div id="{{{section}}}-copper" class="large-6 columns">
+        {{#if chemical }}
+            <h4>Copper Concentration</h4>
+        {{/if}}
+    </div>
+    <div id="equations" class="large-6 columns"></div>
+</div>
+

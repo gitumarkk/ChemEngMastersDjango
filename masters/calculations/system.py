@@ -12,16 +12,22 @@ import numpy as np
 class System(object):
     def __init__(self, biox_volume, chem_volume, initial_copper, ferric_ferrous, total_iron):
         self.units = []
-        self.biox_volume = biox_volume or 1
-        self.chem_volume = chem_volume or 1
+        self.biox_volume = biox_volume or 1.0
+        self.chem_volume = chem_volume or 1.0
         self.initial_copper = (initial_copper or 2) / 63.5  # Converting to moles / l
-        self.ferric_ferrous = ferric_ferrous or 1000
-        self.total_iron = (9 or total_iron) / 1000 # Converting to g/m^3
+        self.ferric_ferrous = ferric_ferrous or 1000.0
+        self.total_iron = (9.0 or total_iron) # Converting to g/m^3
 
-        self.ferrous = (self.total_iron / self.ferric_ferrous) / 55.85
-        self.ferric = (self.total_iron * self.ferric_ferrous) / 55.85
+        self.ferrous = self.calculate_initial_ferrous_conc() / 55.85
+        self.ferric = self.calculate_initial_ferric_conc() / 55.85
 
         self.img = None
+
+    def calculate_initial_ferric_conc(self):
+        return (self.total_iron * self.ferric_ferrous) / (self.ferric_ferrous + 1.0)
+
+    def calculate_initial_ferrous_conc(self):
+        return self.total_iron / (self.ferric_ferrous + 1.0)
 
     def create_reactor(self, reactor, volume, upstream):
         # This will be used to add a reactor to the system
@@ -57,7 +63,29 @@ class System(object):
         self.img = ""
 
     def build_cyclic_tanks(self):
-        pass
+
+        # This is temporary as once the chemical reactor is built,
+        # the upstream will be updated
+        upstream = reactors.BaseUpStream(ferric=self.ferric,
+                                         ferrous=self.ferrous,
+                                         ratio=self.ferric_ferrous)
+
+        # Building the Bioxidation Reactor
+        self.biox_rate = reactions.BioxidationRate()
+        self.biox_cstr = self.create_reactor(reactors.CSTR, self.biox_volume, upstream)
+        self.biox_cstr.update_component_rate(self.biox_rate)
+
+        # Setting up the Chemical Reactor
+        self.copper_rate = reactions.MetalDissolutionRate(
+                                            constants.COPPER,
+                                            self.initial_copper,
+                                            system=constants.CONTINUOUS)
+        self.chem_cstr = self.create_reactor(reactors.CSTR, self.chem_volume, self.biox_cstr)
+        self.chem_cstr.update_component_rate(self.copper_rate)
+
+        # Updating the biox_cstr upstream
+        self.biox_cstr.upstream = self.chem_cstr
+        self.biox_cstr.update_flow_in()
 
     def step(self):
         """
@@ -69,6 +97,9 @@ class System(object):
         # import ipdb; ipdb.set_trace()
         output = [unit.run() for unit in self.units]
         return output
+
+    def convert_to_minutes(self, i):
+        return i / 60.0
 
     def run(self):
         biox_list = []
@@ -84,8 +115,8 @@ class System(object):
 
             final_copper_conc = self.copper_rate.metal_conc
 
-            sys_data[0].update({"step": i})
-            sys_data[1].update({"step": i})
+            sys_data[0].update({"step": self.convert_to_minutes(i)})
+            sys_data[1].update({"step": self.convert_to_minutes(i)})
 
             biox_list.append(sys_data[0])
             chem_list.append(sys_data[1])
