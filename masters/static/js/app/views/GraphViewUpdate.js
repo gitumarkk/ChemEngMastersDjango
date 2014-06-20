@@ -9,7 +9,7 @@ function(Backbone, Handlebars, d3, d3_graphs, graphTPL){
 
     var GraphView = Backbone.View.extend({
         template: graphTPL,
-        events: "",
+        events: {},
 
         initialize: function(options){
             var self = this;
@@ -38,9 +38,7 @@ function(Backbone, Handlebars, d3, d3_graphs, graphTPL){
         plotGraphs: function(){
             var self = this;
             self.ferricGraphs();
-            if (self.section === "chemical") {
-                self.copperGraphs();
-            }
+            self.copperGraphs();
             return self;
         },
         ferricGraphs: function(){
@@ -75,11 +73,6 @@ function(Backbone, Handlebars, d3, d3_graphs, graphTPL){
             var tpl;
             tpl = Handlebars.default.compile(self.template);
             return tpl;
-        },
-        close: function(){
-            this.$el.empty();
-            this.unbind();
-            console.log("closing the graphs");
         }
     });
 

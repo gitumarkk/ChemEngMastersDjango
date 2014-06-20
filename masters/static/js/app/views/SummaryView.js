@@ -25,11 +25,6 @@ function(Backbone, Handlebars, summaryTPL){
             var tpl;
             tpl = Handlebars.default.compile(self.template);
             return tpl;
-        },
-        close: function(){
-            this.$el.empty();
-            this.unbind();
-            console.log("closing the summary");
         }
     });
     return SummaryView;

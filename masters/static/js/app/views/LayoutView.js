@@ -16,6 +16,8 @@ function(Backbone, Handlebars, d3, GraphView, SummaryView, layoutTPL){
     var LayoutView = Backbone.View.extend({
         menuTemplate: layoutTPL,
         el: "#layout",
+        // tagName: "div",
+        // id: "layout",
         events: {
             "submit #reactor_conditions": "validateForm",
         },  // Add menu here
@@ -23,15 +25,14 @@ function(Backbone, Handlebars, d3, GraphView, SummaryView, layoutTPL){
             var self = this;
 
             // If anything is in DOM completely close it
-            self.close();
+            // self.close();
 
             self.current_views = [];
             _.bindAll(self, "assignViews");
-
+            console.log("layout view initialized");
             self.type = options.type;
             self.system = options.system;
             self.src = options.src;
-
             self.menu_tpl = this.compileTemplate(this.menuTemplate);
             self.render();
             // self.fetchDataWithD3();
@@ -52,13 +53,13 @@ function(Backbone, Handlebars, d3, GraphView, SummaryView, layoutTPL){
 
             reactorConditions = $(ev.currentTarget).serializeObject();
             params =  $.param(reactorConditions);
-
+            console.log(self.src);
             this.fetchDataWithD3(self.src+"?"+params);
         },
 
         fetchDataWithD3: function(url){
             var self = this;
-            self.closeCurrentViews();
+            self.emptyCurrentViews();
             d3.json(url, function(error, data){
                 self.assignViews(data);
             });
@@ -91,17 +92,20 @@ function(Backbone, Handlebars, d3, GraphView, SummaryView, layoutTPL){
         closeCurrentViews: function(){
             /* Close all current vies and empty the array */
             var self = this;
-            console.log("closing all current views");
-            console.log(self.current_views.length);
             while(self.current_views.length > 0){
                 var _v = self.current_views.pop();
                 _v.close();
             }
-            console.log(self.current_views.length);
-            // for (var _v in self.current_views){
-            //     _v.close();
-            // }
-        }
+        },
+
+        emptyCurrentViews: function(){
+            /* Close all current vies and empty the array */
+            var self = this;
+            while(self.current_views.length > 0){
+                var _v = self.current_views.pop();
+                _v.$el.empty();
+            }
+        },
     });
     return LayoutView;
 });

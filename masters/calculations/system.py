@@ -14,7 +14,7 @@ class System(object):
         self.units = []
         self.biox_volume = biox_volume or 1.0
         self.chem_volume = chem_volume or 1.0
-        self.initial_copper = (initial_copper or 2) / 63.5  # Converting to moles / l
+        self.initial_copper = (initial_copper or 2) / 63.5  # Need to divide by Volume / self.chem_volume
         self.ferric_ferrous = ferric_ferrous or 1000.0
         self.total_iron = (9.0 or total_iron) # Converting to g/m^3
 
@@ -22,6 +22,7 @@ class System(object):
         self.ferric = self.calculate_initial_ferric_conc() / 55.85
 
         self.img = None
+        self.system_components = [] # List of all the ions in the system
 
     def calculate_initial_ferric_conc(self):
         return (self.total_iron * self.ferric_ferrous) / (self.ferric_ferrous + 1.0)
@@ -50,17 +51,22 @@ class System(object):
                                               ratio=self.ferric_ferrous)
         self.biox_rate = reactions.BioxidationRate()
         self.biox_cstr = self.create_reactor(reactors.CSTR, self.biox_volume, self.upstream)
-        self.biox_cstr.update_component_rate(self.biox_rate)
+        self.biox_cstr.create_components(self.biox_rate)
+
+        self.system_components.append(self.biox_rate.reactant_name)
 
         # Setting up the Chemical Reactor
         self.copper_rate = reactions.MetalDissolutionRate(
                                             constants.COPPER,
                                             self.initial_copper,
                                             system=constants.CONTINUOUS)
-        chem_cstr = self.create_reactor(reactors.CSTR, self.chem_volume, self.biox_cstr)
-        chem_cstr.update_component_rate(self.copper_rate)
+        self.chem_cstr = self.create_reactor(reactors.CSTR, self.chem_volume, self.biox_cstr)
+        self.chem_cstr.create_components(self.copper_rate)
+        # That the system can be aware of all ions/ reactants
+        self.system_components.append(self.copper_rate.reactant_name)
 
-        self.img = ""
+        self.add_system_ions_to_reactors()
+        self.img = "/static/img/system/tanks_in_series.png"
 
     def build_cyclic_tanks(self):
 
@@ -73,7 +79,8 @@ class System(object):
         # Building the Bioxidation Reactor
         self.biox_rate = reactions.BioxidationRate()
         self.biox_cstr = self.create_reactor(reactors.CSTR, self.biox_volume, upstream)
-        self.biox_cstr.update_component_rate(self.biox_rate)
+        self.biox_cstr.create_components(self.biox_rate)
+        self.system_components.append(self.biox_rate.reactant_name)
 
         # Setting up the Chemical Reactor
         self.copper_rate = reactions.MetalDissolutionRate(
@@ -81,11 +88,19 @@ class System(object):
                                             self.initial_copper,
                                             system=constants.CONTINUOUS)
         self.chem_cstr = self.create_reactor(reactors.CSTR, self.chem_volume, self.biox_cstr)
-        self.chem_cstr.update_component_rate(self.copper_rate)
+        self.chem_cstr.create_components(self.copper_rate)
+        self.system_components.append(self.copper_rate.reactant_name)
 
         # Updating the biox_cstr upstream
         self.biox_cstr.upstream = self.chem_cstr
         self.biox_cstr.update_flow_in()
+
+        self.add_system_ions_to_reactors()
+        self.img = "/static/img/system/closed_loop.png"
+
+    def add_system_ions_to_reactors(self):
+        for unit in self.units:
+            unit.create_ions_in_reactor(self.system_components)
 
     def step(self):
         """
@@ -127,11 +142,16 @@ class System(object):
                  "chemical": chem_list,
                  "summary": {"bioxidation": {"ferric_in": self.biox_cstr.flow_in["components"]["ferric"],
                                              "ferrous_in": self.biox_cstr.flow_in["components"]["ferrous"],
-                                             "volume": self.biox_volume},
+                                             "volume": self.biox_volume,
+                                             "equation": ""},
                              "chemical": {"initial_copper_conc": self.initial_copper,
                                            "final_copper_conc": final_copper_conc,
-                                           "volume": self.chem_volume},
-                            "combined": {"VChem_VBiox": self.chem_volume/self.biox_volume}
+                                           "volume": self.chem_volume,
+                                           "equation": ""},
+                            "combined": {"VChem_VBiox": self.chem_volume/self.biox_volume},
+                            "system": {"img": self.img}
+
                             }
-                 }
+                }
+        print self.img
         return _data

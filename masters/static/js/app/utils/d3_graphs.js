@@ -203,13 +203,13 @@ define(["d3"], function(d3){
 
             append_copper: function(data){
                 var self = this;
-
+                // console.log(data);
                 var copper = d3.svg.line()
                                     .x(function(d) { return self.x(d.step); })
-                                        .y(function(d) { return self.y(d.cstr_data.components.metal_conc); });
+                                        .y(function(d) { return self.y(d.ions.Cu); });
 
                 self.x.domain(d3.extent(data, function(d) { return d.step; }));
-                self.y.domain(d3.extent(data, function(d) { return d.cstr_data.components.metal_conc; }));
+                self.y.domain(d3.extent(data, function(d) { console.log(d.ions.Cu); return d.ions.Cu; }));
 
                 self.svg.append("path")
                             .datum(data)

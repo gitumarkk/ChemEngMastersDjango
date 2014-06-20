@@ -64,9 +64,11 @@ require(['jquery', 'foundation'], function($, Foundation) {
 require(['jquery', "backbone", "routers/router"], function($, Backbone, AppRouter) {
     // Global Inheritance
     Backbone.View.prototype.close = function() {
-        this.$el.empty();
+        this.remove();
         this.unbind();
-        console.log("prototypal close");
+        if(this.onClose){
+            this.onClose();
+        }
     };
 
     // SserializeObject for forms

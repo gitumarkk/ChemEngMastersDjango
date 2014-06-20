@@ -63,11 +63,11 @@ def single_reactor(request, reactor_type=None):
 
 def system_run(request, system_type=None):
     print "started"
-    ferricFerrousRatio = request.GET.get('ferricFerrousRatio')
-    chemicalVolume = request.GET.get('chemicalVolume')
-    bioxidationVolume = request.GET.get('bioxidationVolume')
-    totalIron = request.GET.get("totalIron")
-    initialCopper = request.GET.get('initialCopper')
+    ferricFerrousRatio = request.GET.get('ferricFerrousRatio', 0)
+    chemicalVolume = request.GET.get('chemicalVolume', 0)
+    bioxidationVolume = request.GET.get('bioxidationVolume', 0)
+    totalIron = request.GET.get("totalIron", 0)
+    initialCopper = request.GET.get('initialCopper', 0)
     sys = system.System(float(bioxidationVolume),
                             float(chemicalVolume),
                             float(initialCopper),
@@ -95,8 +95,10 @@ def run_copper_reaction_rates():
     i = 0
     while copper.ferric > 1e-9 and copper.metal_conc > 1e-9:
         temp = {}
-        rate_ferrous, rate_ferric, copper_metal_conc  = copper.run()
-        temp = {"ferric": copper.ferric, "rate_ferric": rate_ferric, "step": i, "copper": copper_metal_conc}
+        # rate_ferrous, rate_ferric, copper_metal_conc  = copper.run()
+        output = copper.run()
+        temp = {"ferric": copper.ferric,  "step": i, "copper": output["metal_conc"]}
+        temp.update(output)
         data.append(temp)
         i = i + 1
     return data
@@ -117,11 +119,13 @@ def run_bioxidation_raction_rates_simulation():
 
         if not ferric == 0: # Avoid division by zero error
             np.seterr(divide='ignore')
-            rate_ferrous, rate_ferric, metal_conc = biox_reaction.run()
+            # rate_ferrous, rate_ferric, metal_conc = biox_reaction.run()
+            output = biox_reaction.run()
 
             ferric_ferrous = np.divide(ferric, ferrous)
 
-            temp = {"ferric_ferrous": ferric_ferrous, "rate_ferrous": rate_ferrous, "step": i}
+            temp = {"ferric_ferrous": ferric_ferrous, "step": i}
+            temp.update(output)
             data.append(temp)
     return data
 
@@ -137,7 +141,7 @@ def run_chemical_single_reactor():
                                                  copper_conc,
                                                  upstream.flow_out["components"]["ferric"],
                                                  system=constants.CONTINUOUS)
-    cstr.update_component_rate(metal_rate)
+    cstr.update_components(metal_rate)
     i = 0
     # metal_rate.ferric > 1e-9 and metal_rate.metal_conc > 1e-9
     while True:

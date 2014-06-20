@@ -10,7 +10,7 @@ class BaseUpStream(object):
     def __init__(self, ferric=None, ferrous=None, ratio=None, flow_out=None):
         RATIO = ratio or 1000
         # ferrous = 9 / 55.85
-        ferric = ferric or 9 / 55.85
+        ferric = ferric or 9 / 55.85  # / VOLUME
         ferrous = ferrous or ferric / RATIO
         self.flow_out = flow_out or {"flowrate": 1. / (1 * 60),  # m^3 / s
                                     "components": {"ferrous": ferrous , "ferric": ferric}}
@@ -36,51 +36,109 @@ class CSTR(object):
 
         self.ferric = self.flow_in["components"]["ferric"]
         self.ferrous = self.flow_in["components"]["ferrous"]
-        self.components_rate = [] # Array holding the components in the reactor
+        self.components = [] # Array holding the components in the reactor
+        self.cstr_data = {}
+        self.ions = {}
 
-    def update_component_rate(self, component):
+    def create_components(self, component):
         """
         Function that updates the components rate objects in the reactor
         """
         component.update_global_reactant_concentrations(self.ferric, self.ferrous)
-        self.components_rate.append(component)
+        self.components.append(component)
+
+    def create_ions_in_reactor(self, system_components):
+        for component_name in system_components:
+            self.ions[component_name] = 0
 
     def reaction(self):
         cummulative_rate_ferrous = 0  # Rate is dependent on prevoius concentrations and not
         cummulative_rate_ferric = 0
 
-        cstr_data = {}  # specific rates of the individual op
+        _cstr_data = {"components": {}}  # specific rates of the individual op
 
         # previous rates
-        for component in self.components_rate:
-            rate_ferrous, rate_ferric, metal_conc = component.run()
+        for component in self.components:
+            # rate_ferrous, rate_ferric, metal_conc = component.run()
+            output = component.run()
+            # rate_metal_conc]
+            rate_ferrous = output.get("rate_ferrous", 0.)
+            rate_ferric = output.get("rate_ferric", 0.)
+            rate_metal = output.get("rate_metal", 0.)
+            metal_moles = output.get("metal_conc", 0.)
+            ion_moles = output.get("ion_conc", 0.)
 
             cummulative_rate_ferrous = cummulative_rate_ferrous + rate_ferrous
             cummulative_rate_ferric = cummulative_rate_ferric + rate_ferric
 
+            """
+            THIS IS WRONG SHOULD BE cstr_data["components"]["name"] = {} BUT WILL EXTEND LATER
+            """
+
             # Assuming all rates occur once in the system
-            cstr_data["components"] = {"rate_ferrous": rate_ferrous,
-                                        "rate_ferric": rate_ferric,
-                                        "metal_conc": metal_conc,
-                                        "name": component.reactant_name}
+            # _cstr_data["components"] = {"rate_ferrous": rate_ferrous,
+            #                             "rate_ferric": rate_ferric,
+            #                             "metal_conc": metal_conc,
+            #                             "metal_ion": metal_ion,
+            #                             "rate_metal": rate_metal,
+            #                             "name": component.reactant_name}
+            _cstr_data["components"][component.reactant_name] = {
+                            "rate_ferrous": rate_ferrous,
+                            "rate_ferric": rate_ferric,
+                            "metal_moles": metal_moles,
+                            "ion_moles": ion_moles,
+                            "rate_metal": rate_metal
+                        }
 
-        cstr_data["total_rate_ferrous"] = cummulative_rate_ferrous
-        cstr_data["total_rate_ferric"] = cummulative_rate_ferric
+        _cstr_data["total_rate_ferrous"] = cummulative_rate_ferrous
+        _cstr_data["total_rate_ferric"] = cummulative_rate_ferric
 
-        return cstr_data
+        return _cstr_data
 
-    def update_reactor_ferric_and_ferrous_concentration(self, cstr_data):
+    def calculate_reactor_ferric_and_ferrous_concentration(self):
         """
-        This updates the total concentrations of ferric and ferrous in system after reaction
-
-        As the ferric concentration is governed by
-        [Fe2+]_out = -rate_ferrous / Dilution rate + [Fe2+]_in
+        Calculating f(x, y) in the reactor, before applying the (y(t) + h * (f(x, y)))
+        (v_chem*C_Fe2+_in - v_chem*C_Fe2+_out  + Vol_chem * total_rate_ferrous)
         """
+        flow_diff_ferrous = (self.flow_in["components"]["ferrous"] - self.flow_out["components"]["ferrous"]) * self.get_dilution_rate()
+        ferrous_conc = flow_diff_ferrous + self.cstr_data["total_rate_ferrous"]
 
-        # By including the dilution rate after the first step, there is a kink in the graph as there is a large drop in
-        # Ferrous concentration
-        self.ferrous = self.flow_in["components"]["ferrous"] + (cstr_data["total_rate_ferrous"] / self.get_dilution_rate())
-        self.ferric = self.flow_in["components"]["ferric"] + (cstr_data["total_rate_ferric"] / self.get_dilution_rate())
+        flow_diff_ferric = (self.flow_in["components"]["ferric"] - self.flow_out["components"]["ferric"]) * self.get_dilution_rate()
+        ferric_conc = flow_diff_ferric + self.cstr_data["total_rate_ferric"]
+
+        return ferrous_conc, ferric_conc
+
+    def calculate_metal_ion_concentrations(self):
+        """
+        calculate y(t+1) by adding y(t) + h * ( f(x, y) )
+        """
+        key = self.cstr_data["components"].keys()[0]
+        print self.cstr_data["components"].keys()
+        if self.flow_in["components"].get(key) == None:
+            # print "self.flow_in[components].get(key) == NONE", key
+            self.flow_in["components"][key] = 0.0
+
+        # if 0: evaluates to false
+        # print self.flow_out["components"], self.flow_out["components"].get(key), key
+        if self.flow_out["components"].get(key) == None:
+            # print "self.flow_out[components].get(key) == NONE", key
+            self.flow_out["components"][key] = 0.0
+
+        # ERROR IS THAT IT ONLY CALCULATES THE CONCENTRATION OF THE CSTR KEY HENCE IF
+        # BIOXIDATION REACTOR AND THE KEY IS CU THE FLOW OUT WILL NEVER GET CALCULATED
+        # flow_in = self.flow_in["components"] if self.flow_in["components"].get(key) else
+        flow_diff = (self.flow_in["components"][key] - self.flow_out["components"][key])
+        ion_conc = flow_diff + self.cstr_data["components"][key]["rate_metal"]
+        ion_name = key
+        return ion_conc, ion_name
+
+    def perform_euler_calculation(self):
+        """
+        This updates the total concentrations of ferric and ferrous in system after reaction based on the Euler method
+        """
+        ferrous_conc, ferric_conc = self.calculate_reactor_ferric_and_ferrous_concentration()
+        self.ferrous = self.ferrous + (1 * ferrous_conc) # Assuming step = 1
+        self.ferric = self.ferric + (1 * ferric_conc) # Assuming step = 1
 
         if self.ferric < 0:
             # This means that the ferric concentration is limiting
@@ -90,15 +148,40 @@ class CSTR(object):
             # This means that the ferrous concentration is limiting
             self.ferrous = 0
 
+        self.ions["ferric"] = self.ferric
+        self.ions["ferrous"] = self.ferrous
+
+        # Should be a for loop for a multi-component system
+        ion_conc, ion_name = self.calculate_metal_ion_concentrations()
+        ion_update = self.ions[ion_name] + (1 * ion_conc)
+
+        # Need to create a link to the system components
+        ions = {
+            "ferric": self.ferric,
+            "ferrous": self.ferrous,
+            ion_name: ion_update
+        }
+
+        # Adding the system components to the new output adue to python holding its dict reference
+        for k, v in self.ions.iteritems():
+            if k not in ions:
+                ions[k] = v
+        # import ipdb; ipdb.set_trace()
+        self.ions = ions
+
+
     def update_flow_out_stream(self):
         """
         Updating the outflow stream
         """
+        # _comp = {"ferric": self.ferric, "ferrous": self.ferrous, "Cu": self.ions["Cu"], "Bacteria": self.ions["Bacteria"]}
+        # _comp = self.ions
+        # print self.ions["ferric"] - self.ferric, self.ions["ferrous"] - self.ferrous
         self.flow_out = {"flowrate": self.flow_in["flowrate"],
-                        "components": {"ferrous": self.ferrous , "ferric": self.ferric}}
+                        "components": self.ions}
 
     def update_ferric_concentrations_in_components(self):
-        for component in self.components_rate:
+        for component in self.components:
             component.update_global_reactant_concentrations(self.ferric, self.ferrous)
 
     def update_flow_in(self):
@@ -121,10 +204,11 @@ class CSTR(object):
         self.update_flow_in()
 
         # 2) Run the reatcion
-        cstr_data = self.reaction()
+        self.cstr_data = self.reaction()
 
         # 3) Update the ferrous and ferric concentration of the system after the reaction
-        self.update_reactor_ferric_and_ferrous_concentration(cstr_data)
+        # self.update_reactor_ferric_and_ferrous_concentration()
+        self.perform_euler_calculation()
 
         # 4) For each component in the reactors update the global ferric concentrations
         self.update_ferric_concentrations_in_components()
@@ -132,4 +216,9 @@ class CSTR(object):
         # 5) Update the flow out stream from the CSTR
         self.update_flow_out_stream()
 
-        return {"cstr_data": cstr_data, "flow_out": self.flow_out, "flow_in": self.flow_in}
+        # print self.flow_out["components"]
+        # print self.ions["Cu"]
+        return {"cstr_data": self.cstr_data,
+                "flow_out": self.flow_out,
+                "flow_in": self.flow_in,
+                "ions": self.ions}

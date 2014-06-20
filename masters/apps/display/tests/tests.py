@@ -28,8 +28,10 @@ class TestViews(TestCase):
         self.assertEqual(item_0['cstr_data']['total_rate_ferrous'], -item_0['cstr_data']['total_rate_ferric'])
 
         self.assertIn('components', item_0['cstr_data'])
-        self.assertEqual(item_0['cstr_data']["components"]["name"], "Cu")
-        self.assertEqual(item_0['cstr_data']["components"]["rate_ferrous"], -item_0['cstr_data']["components"]["rate_ferric"])
+
+        self.assertIn("Cu", item_0['cstr_data']["components"])
+        self.assertEqual(item_0['cstr_data']["components"]["Cu"]["rate_ferrous"],
+                         -item_0['cstr_data']["components"]["Cu"]["rate_ferric"])
 
         # print response_json[len(response_json)-3:]
 

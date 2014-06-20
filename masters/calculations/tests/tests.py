@@ -19,12 +19,13 @@ class TestReactors(TestCase):
 
         biox_rate = reactions.BioxidationRate(self.ferric_conc)
 
-        cstr.update_component_rate(biox_rate)
-        self.assertIn(biox_rate, cstr.components_rate)
+        cstr.create_components(biox_rate)
+        self.assertIn(biox_rate, cstr.components)
 
         self.assertEqual(cstr.flow_in, upstream.flow_out)
         self.assertEqual(cstr.flow_in, cstr.flow_out)
         self.assertIsNotNone(cstr.flow_in)
+        self.assertEqual(cstr.ions[biox_rate.reactant_name], 0)
 
         output = cstr.run()
 
@@ -32,14 +33,14 @@ class TestReactors(TestCase):
         self.assertIn('total_rate_ferrous', output["cstr_data"])
         self.assertEqual(output["cstr_data"]['total_rate_ferrous'], -output["cstr_data"]['total_rate_ferric'])
 
-        self.assertEqual(output["cstr_data"]['total_rate_ferrous'], output["cstr_data"]["components"]["rate_ferrous"])
+        self.assertEqual(output["cstr_data"]['total_rate_ferrous'], output["cstr_data"]["components"][biox_rate.reactant_name]["rate_ferrous"])
         self.assertNotEqual(output["flow_out"]["components"]["ferric"], upstream.flow_out["components"]["ferric"])
 
         self.assertEqual(output["flow_out"]["components"]["ferric"], cstr.flow_out["components"]["ferric"])
 
         # Assert that the change in ferric is equal to change in rate
         self.assertAlmostEqual(output["flow_out"]["components"]["ferric"] - cstr.flow_in["components"]["ferric"],
-                         output["cstr_data"]['total_rate_ferric']/cstr.get_dilution_rate()) # Almost equal due to floating point errors
+                         output["cstr_data"]['total_rate_ferric']) # Almost equal due to floating point errors
 
 
     def test_running_cstr_reactor_with_simplified_chemical_equation(self):
@@ -50,30 +51,35 @@ class TestReactors(TestCase):
                                                      self.ferric_conc,
                                                      system=constants.CONTINUOUS)
 
-        cstr.update_component_rate(copper_rate)
+        cstr.create_components(copper_rate)
 
-        self.assertIn(copper_rate, cstr.components_rate)
+        self.assertIn(copper_rate, cstr.components)
         self.assertEqual(cstr.flow_in, upstream.flow_out)
         self.assertEqual(cstr.flow_in, cstr.flow_out)
         self.assertIsNotNone(cstr.flow_in)
+
+        self.assertEqual(cstr.ions[copper_rate.reactant_name], 0)
 
         output = cstr.run()
 
         self.assertIn('total_rate_ferric', output["cstr_data"])
         self.assertIn('total_rate_ferrous', output["cstr_data"])
 
-        self.assertEqual('Cu', output["cstr_data"]["components"]["name"])
+        self.assertIn('Cu', output["cstr_data"]["components"])
         self.assertEqual(output["cstr_data"]['total_rate_ferrous'], -output["cstr_data"]['total_rate_ferric'])
-        self.assertEqual(output["cstr_data"]["components"]['rate_ferrous'], -output["cstr_data"]["components"]['rate_ferric'])
+        self.assertEqual(output["cstr_data"]["components"][copper_rate.reactant_name]['rate_ferrous'],
+                         -output["cstr_data"]["components"][copper_rate.reactant_name]['rate_ferric'])
 
-        self.assertEqual(output["cstr_data"]['total_rate_ferrous'], output["cstr_data"]["components"]["rate_ferrous"])
-        self.assertNotEqual(output["flow_out"]["components"]["ferric"], upstream.flow_out["components"]["ferric"])
+        self.assertEqual(output["cstr_data"]['total_rate_ferrous'],
+                         output["cstr_data"]["components"][copper_rate.reactant_name]["rate_ferrous"])
+        self.assertNotEqual(output["flow_out"]["components"]["ferric"],
+                            upstream.flow_out["components"]["ferric"])
 
         self.assertEqual(output["flow_out"]["components"]["ferric"], cstr.flow_out["components"]["ferric"])
 
         # Assert that the change in ferric is equal to change in rate
         self.assertAlmostEqual(output["flow_out"]["components"]["ferric"] - cstr.flow_in["components"]["ferric"],
-                         output["cstr_data"]['total_rate_ferric']/cstr.get_dilution_rate()) # Almost equal due to floating point errors
+                         output["cstr_data"]['total_rate_ferric']) # Almost equal due to floating point errors
 
 
 class TestRunningSystem(TestCase):
@@ -110,6 +116,8 @@ class TestRunningSystem(TestCase):
 
         sys.step()
         self.assertEqual(chem_old, sys.biox_cstr.flow_in)
+        # import ipdb; ipdb.set_trace()
+        # pass
 
     def test_system_runs_okay_with_tanks_in_series_model(self):
         # BaseUpstream -> Bioxidation -> CSTR ->

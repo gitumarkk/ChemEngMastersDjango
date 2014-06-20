@@ -39,16 +39,31 @@ module.exports = function(grunt) {
     },
     watch: {
       jsFiles: {
-        files: ['**/*.js'],
-        tasks: ['connect:test', 'shell:ci']
+        files: ['**/*.js', '!app.min.js','**/*.html'],
+        // tasks: ['connect:test', 'shell:ci']
+        tasks: ['requirejs:compile']
       }
-    }
+    },
+    requirejs: {
+        compile: {
+            options: {
+                mainConfigFile: "app/app.js",
+                out: "app.min.js",
+                findNestedDependencies: true,
+                optimize: "uglify",
+                include: "app.js",
+                logLevel: 0,
+                inlineText: true
+          }
+        }
+      }
   });
 
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-mocha');
   grunt.loadNpmTasks('grunt-shell');
+  grunt.loadNpmTasks('grunt-contrib-requirejs');
 
   grunt.registerTask('test', ['connect:test', 'shell:ci']);
 };

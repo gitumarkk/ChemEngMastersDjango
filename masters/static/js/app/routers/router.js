@@ -18,7 +18,6 @@ define([
             // 'reactionRates/:copper': "reactionRates",
             'reactions/:action': "reactionRates",
             'reactors/:action': "reactors",
-            // 'system/:action': "system",
             'system/:action': "system",
             'reset': "reset",
         },
@@ -38,7 +37,12 @@ define([
         //     graph.render();
         // },
         system: function(action){
-            if (self.current_view) {self.current_view.close();}
+            if (self.current_view) {
+                self.current_view.close();
+                $("<div id='layout'></div>").appendTo("body");
+            }
+
+            console.log(action);
             var layout = new LayoutView({"type": "system",
                                         "system": action,
                                         src: "/system_run/" + action + "/"});
