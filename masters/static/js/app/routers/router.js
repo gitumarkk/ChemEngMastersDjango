@@ -14,8 +14,6 @@ define([
         },
 
         routes: {
-            // '*filter': 'defaultRoute',
-            // 'reactionRates/:copper': "reactionRates",
             'reactions/:action': "reactionRates",
             'reactors/:action': "reactors",
             'system/:action': "system",
@@ -29,13 +27,8 @@ define([
         reactors: function(action){
             var graph = new GraphView({"reactor": action, src: "/single_reactor/" + action + "/"});
             graph.render();
+            self.current_view = graph;
         },
-        // system: function(action){
-        //     console.log("system");
-        //     console.log(action);
-        //     var graph = new GraphView({"system": action, src: "/system_run/" + action + "/"});
-        //     graph.render();
-        // },
         system: function(action){
             if (self.current_view) {
                 self.current_view.close();

@@ -83,7 +83,6 @@ def system_run(request, system_type=None):
 
     data = sys.run()
     json_data = dumps(data)
-
     print "complete"
     return HttpResponse(json_data, content_type='application/json')
 

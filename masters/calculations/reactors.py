@@ -65,8 +65,8 @@ class CSTR(object):
             rate_ferrous = output.get("rate_ferrous", 0.)
             rate_ferric = output.get("rate_ferric", 0.)
             rate_metal = output.get("rate_metal", 0.)
-            metal_moles = output.get("metal_conc", 0.)
-            ion_moles = output.get("ion_conc", 0.)
+            metal_moles = output.get("metal_moles", 0.)
+            ion_moles = output.get("ion_moles", 0.)
 
             cummulative_rate_ferrous = cummulative_rate_ferrous + rate_ferrous
             cummulative_rate_ferric = cummulative_rate_ferric + rate_ferric
@@ -108,12 +108,11 @@ class CSTR(object):
 
         return ferrous_conc, ferric_conc
 
-    def calculate_metal_ion_concentrations(self):
+    def calculate_metal_ion_concentrations(self, key):
         """
         calculate y(t+1) by adding y(t) + h * ( f(x, y) )
         """
-        key = self.cstr_data["components"].keys()[0]
-        print self.cstr_data["components"].keys()
+
         if self.flow_in["components"].get(key) == None:
             # print "self.flow_in[components].get(key) == NONE", key
             self.flow_in["components"][key] = 0.0
@@ -127,9 +126,17 @@ class CSTR(object):
         # ERROR IS THAT IT ONLY CALCULATES THE CONCENTRATION OF THE CSTR KEY HENCE IF
         # BIOXIDATION REACTOR AND THE KEY IS CU THE FLOW OUT WILL NEVER GET CALCULATED
         # flow_in = self.flow_in["components"] if self.flow_in["components"].get(key) else
-        flow_diff = (self.flow_in["components"][key] - self.flow_out["components"][key])
-        ion_conc = flow_diff + self.cstr_data["components"][key]["rate_metal"]
+        flow_diff = (self.flow_in["components"][key] - self.flow_out["components"][key]) * self.get_dilution_rate()
+
+        # If the system component is part of original reactor components work out rate else work out the flow rate
+        if self.cstr_data["components"].get(key):
+            ion_conc = flow_diff + self.cstr_data["components"][key]["rate_metal"]
+        else:
+            ion_conc = flow_diff
+        # ion_conc = flow_diff + self.cstr_data["components"][key]["rate_metal"]
         ion_name = key
+
+        # If self.cstr_data["components"].get(key) == None: ion_conc=flow_dif
         return ion_conc, ion_name
 
     def perform_euler_calculation(self):
@@ -151,16 +158,28 @@ class CSTR(object):
         self.ions["ferric"] = self.ferric
         self.ions["ferrous"] = self.ferrous
 
-        # Should be a for loop for a multi-component system
-        ion_conc, ion_name = self.calculate_metal_ion_concentrations()
-        ion_update = self.ions[ion_name] + (1 * ion_conc)
-
-        # Need to create a link to the system components
         ions = {
             "ferric": self.ferric,
             "ferrous": self.ferrous,
-            ion_name: ion_update
         }
+
+        for key in self.ions.keys():
+            if key in ions.keys():  # Do not calculate what has already been calculated
+                continue
+            ion_conc, ion_name = self.calculate_metal_ion_concentrations(key)
+            ion_update = self.ions[ion_name] + (1 * ion_conc)
+            ions[ion_name] = ion_update
+
+        # Should be a for loop for a multi-component system
+        # ion_conc, ion_name = self.calculate_metal_ion_concentrations()
+        # ion_update = self.ions[ion_name] + (1 * ion_conc)
+
+        # Need to create a link to the system components
+        # ions = {
+        #     "ferric": self.ferric,
+        #     "ferrous": self.ferrous,
+        #     ion_name: ion_update
+        # }
 
         # Adding the system components to the new output adue to python holding its dict reference
         for k, v in self.ions.iteritems():

@@ -109,6 +109,7 @@ class MetalDissolutionRate(object):
             # This should not be updated here but by the actual reactor
             self.update_metal_reactant_concentration(rate_ferric)
             rate_ferrous = self.ferric_to_ferrous(rate_ferric)
+
             data = {
                 "rate_ferrous": rate_ferrous,
                 "rate_ferric": rate_ferric,

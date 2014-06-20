@@ -38,7 +38,10 @@ function(Backbone, Handlebars, d3, d3_graphs, graphTPL){
         plotGraphs: function(){
             var self = this;
             self.ferricGraphs();
-            self.copperGraphs();
+            self.cupricGraphs();
+            if (self.section === "chemical") {
+                self.copperGraphs();
+            }
             return self;
         },
         ferricGraphs: function(){
@@ -66,6 +69,13 @@ function(Backbone, Handlebars, d3, d3_graphs, graphTPL){
             var copper_obj = d3_graphs();
             copper_obj.graph_container("#"+self.section+"-copper");
             copper_obj.append_copper(self.data);
+            return self;
+        },
+        cupricGraphs: function(){
+            var self = this;
+            var cupric_obj = d3_graphs();
+            cupric_obj.graph_container("#"+self.section+"-cupric");
+            cupric_obj.append_cupric(self.data);
             return self;
         },
         compileTemplate: function() {

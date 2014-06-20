@@ -203,13 +203,13 @@ define(["d3"], function(d3){
 
             append_copper: function(data){
                 var self = this;
-                // console.log(data);
+                console.log(data);
                 var copper = d3.svg.line()
                                     .x(function(d) { return self.x(d.step); })
-                                        .y(function(d) { return self.y(d.ions.Cu); });
+                                        .y(function(d) { return self.y(d.cstr_data.components.Cu.metal_moles); });
 
                 self.x.domain(d3.extent(data, function(d) { return d.step; }));
-                self.y.domain(d3.extent(data, function(d) { console.log(d.ions.Cu); return d.ions.Cu; }));
+                self.y.domain(d3.extent(data, function(d) { return d.cstr_data.components.Cu.metal_moles; }));
 
                 self.svg.append("path")
                             .datum(data)
@@ -242,6 +242,42 @@ define(["d3"], function(d3){
             },
 
             append_cupric: function(data){
+                var self = this;
+                // console.log(data);
+                var copper = d3.svg.line()
+                                    .x(function(d) { return self.x(d.step); })
+                                        .y(function(d) { return self.y(d.ions.Cu); });
+
+                self.x.domain(d3.extent(data, function(d) { return d.step; }));
+                self.y.domain(d3.extent(data, function(d) { return d.ions.Cu; }));
+
+                self.svg.append("path")
+                            .datum(data)
+                                .attr("class", "line")
+                                    .style("stroke", "red")
+                                        .attr("d", copper);
+
+                self.svg.append("g")
+                    .attr("class", "x axis")
+                        .attr("transform", "translate(0," + self.height + ")")
+                            .call(self.xAxis)
+                                .append("text")
+                                    .attr("y", 20)
+                                        .attr("dy", ".71em")
+                                            .style("text-anchor", "start")
+                                                .text("Time (Min)");
+
+                self.svg.append("g")
+                    .attr("class", "y axis")
+                        .call(self.yAxis)
+                            .append("text")
+                                .attr("transform", "rotate(-90)")
+                                    .attr("y", 6)
+                                        .attr("dy", ".71em")
+                                            .style("text-anchor", "end")
+                                                .text("[Cupric Concentration mol/m^-3]");
+
+                return self;
 
             }
         };
