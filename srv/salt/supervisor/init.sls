@@ -4,19 +4,16 @@ include:
     - django
 
 supervisor:
-  pkg:
+    pkg:
     - name: supervisor
     - installed
 
-  service.running:
-    - enable: True
-
-supervisor.conf:
     file.managed:
         - name: /etc/supervisor/conf.d/django.conf
         - source: salt://supervisor/django.conf
 
     service.running:
-        - enable: True
-        - watch:
-            - file: /etc/supervisor/conf.d/django.conf
+    - enable: True
+    - watch:
+        - file: /etc/supervisor/conf.d/django.conf
+
