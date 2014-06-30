@@ -13,10 +13,10 @@ supervisor:
 
 supervisor.conf:
     file.managed:
-        - name: /etc/supervisor/conf.d/supervisor.conf
-        - source: salt://supervisor/supervisor.conf
+        - name: /etc/supervisor/conf.d/django.conf
+        - source: salt://supervisor/django.conf
 
     service.running:
         - enabled: True
         - watch:
-            - file: /etc/supervisor/conf.d/supervisor.conf
+            - file: /etc/supervisor/conf.d/django.conf
