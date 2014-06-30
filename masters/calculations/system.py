@@ -1,12 +1,11 @@
 # This module define the entire system and links the reactors together
+# Python
+import time
 
 # Project
 from masters.calculations import reactors
 from masters.calculations import reactions
 from masters.calculations import constants
-
-# Third Party
-import numpy as np
 
 
 class System(object):
@@ -22,7 +21,10 @@ class System(object):
         self.ferric = self.calculate_initial_ferric_conc() / 55.85
 
         self.img = None
+        self.system_type = None
         self.system_components = [] # List of all the ions in the system
+        self.MAX_TIME = 10 # seconds
+        self.FINAL_CONVERSION = 0.99
 
     def calculate_initial_ferric_conc(self):
         return (self.total_iron * self.ferric_ferrous) / (self.ferric_ferrous + 1.0)
@@ -67,6 +69,7 @@ class System(object):
 
         self.add_system_ions_to_reactors()
         self.img = "/static/img/system/tanks_in_series.png"
+        self.system_type = "Tanks in Series"
 
     def build_cyclic_tanks(self):
 
@@ -97,6 +100,7 @@ class System(object):
 
         self.add_system_ions_to_reactors()
         self.img = "/static/img/system/closed_loop.png"
+        self.system_type = "Closed Cyclic Tanks"
 
     def add_system_ions_to_reactors(self):
         for unit in self.units:
@@ -120,12 +124,19 @@ class System(object):
         biox_list = []
         chem_list = []
 
+        t0 = time.clock()
+
         i = 0
         while True:
             # temp = {}
             sys_data = self.step()
 
-            if self.copper_rate.metal_conc < 1e-9:
+            if self.copper_rate.metal_conc < (1 - self.FINAL_CONVERSION) * self.initial_copper:
+                status = {"success": True, "message": "Simulation completed succesfully"}
+                break
+
+            if time.clock() - t0 > self.MAX_TIME:
+                status = {"success": False, "message": "Simulation reached max time of %s" % self.MAX_TIME}
                 break
 
             final_copper_conc = self.copper_rate.metal_conc
@@ -143,14 +154,18 @@ class System(object):
                  "summary": {"bioxidation": {"ferric_in": self.biox_cstr.flow_in["components"]["ferric"],
                                              "ferrous_in": self.biox_cstr.flow_in["components"]["ferrous"],
                                              "volume": self.biox_volume,
-                                             "equation": ""},
+                                             "equation": "",
+                                             "dilution": self.biox_cstr.get_dilution_rate()},
                              "chemical": {"initial_copper_conc": self.initial_copper,
                                            "final_copper_conc": final_copper_conc,
+                                           "conversion": (self.initial_copper - final_copper_conc) / self.initial_copper,
                                            "volume": self.chem_volume,
-                                           "equation": ""},
-                            "combined": {"VChem_VBiox": self.chem_volume/self.biox_volume},
-                            "system": {"img": self.img}
-
+                                           "equation": "",
+                                           "dilution": self.chem_cstr.get_dilution_rate()},
+                            "combined": {"VChem_VBiox": self.chem_volume/self.biox_volume,
+                                         "System Type": self.system_type},
+                            "system": {"img": self.img},
+                            "status": status
                             }
                 }
         print self.img

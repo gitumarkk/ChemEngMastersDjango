@@ -6,6 +6,10 @@
         <table>
             <tbody>
                 <tr>
+                    <td> Simulation Status </td>
+                    <td class="alert-box {{#if status.success}}success{{else}}warning{{/if}}"> {{{ status.message }}} </td>
+                </tr>
+                <tr>
                     <td>Volume Chemical / Volume Bioxidation </td>
                     <td> {{{ combined.VChem_VBiox }}} </td>
                 </tr>
@@ -29,6 +33,10 @@
                     <td>Reactor Volume</td>
                     <td> {{{ bioxidation.volume }}} </td>
                 </tr>
+                <tr>
+                    <td>Dilution</td>
+                    <td> {{{ bioxidation.dilution }}} </td>
+                </tr>
             </tbody>
         </table>
     </div>
@@ -48,6 +56,14 @@
                 <tr>
                     <td>Reactor Volume</td>
                     <td> {{{ chemical.volume }}} </td>
+                </tr>
+                <tr>
+                    <td>Dilution</td>
+                    <td> {{{ chemical.dilution }}} </td>
+                </tr>
+                <tr>
+                    <td>Conversion</td>
+                    <td> {{{ chemical.conversion }}} </td>
                 </tr>
             </tbody>
         </table>

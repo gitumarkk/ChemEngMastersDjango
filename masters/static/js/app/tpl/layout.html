@@ -14,14 +14,20 @@
             </div>
 
             <div class="large-2 columns">
-                Biox Vol (m^3) <input type="text" name="bioxidationVolume" value="1">
+                Biox Vol (l) <input type="text" name="bioxidationVolume" value="1">
             </div>
 
             <div class="large-2 columns">
-                Chem Vol (m^3) <input type="text" name="chemicalVolume" value="1">
+                Chem Vol (l) <input type="text" name="chemicalVolume" value="1">
             </div>
 
-            <button class="button-orange small right" type="submit"> Submit </button>
+            <div class="large-2 columns">
+                <button class="button small right" type="submit"> Submit </button>
+            </div>
+
+            <div class="large-2 columns">
+                <a id="export_data" class="button small right" href="/export_data/{{system}}/?initialCopper=2&totalIron=9&ferricFerrousRatio=1000&bioxidationVolume=1&chemicalVolume=1" target="_blank">Export as excel</a>
+            </div>
         </form>
     </div>
 </div>

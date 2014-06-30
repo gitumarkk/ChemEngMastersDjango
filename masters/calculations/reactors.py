@@ -71,17 +71,6 @@ class CSTR(object):
             cummulative_rate_ferrous = cummulative_rate_ferrous + rate_ferrous
             cummulative_rate_ferric = cummulative_rate_ferric + rate_ferric
 
-            """
-            THIS IS WRONG SHOULD BE cstr_data["components"]["name"] = {} BUT WILL EXTEND LATER
-            """
-
-            # Assuming all rates occur once in the system
-            # _cstr_data["components"] = {"rate_ferrous": rate_ferrous,
-            #                             "rate_ferric": rate_ferric,
-            #                             "metal_conc": metal_conc,
-            #                             "metal_ion": metal_ion,
-            #                             "rate_metal": rate_metal,
-            #                             "name": component.reactant_name}
             _cstr_data["components"][component.reactant_name] = {
                             "rate_ferrous": rate_ferrous,
                             "rate_ferric": rate_ferric,
@@ -235,8 +224,6 @@ class CSTR(object):
         # 5) Update the flow out stream from the CSTR
         self.update_flow_out_stream()
 
-        # print self.flow_out["components"]
-        # print self.ions["Cu"]
         return {"cstr_data": self.cstr_data,
                 "flow_out": self.flow_out,
                 "flow_in": self.flow_in,

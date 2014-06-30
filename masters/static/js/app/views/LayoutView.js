@@ -8,11 +8,11 @@ define([
 "backbone",
 "handlebars",
 "d3",
-"views/GraphViewUpdate",
+"views/SystemView",
 "views/SummaryView",
 "text!tpl/layout.html"
 ],
-function(Backbone, Handlebars, d3, GraphView, SummaryView, layoutTPL){
+function(Backbone, Handlebars, d3, SystemView, SummaryView, layoutTPL){
     var LayoutView = Backbone.View.extend({
         menuTemplate: layoutTPL,
         el: "#layout",
@@ -20,6 +20,9 @@ function(Backbone, Handlebars, d3, GraphView, SummaryView, layoutTPL){
         // id: "layout",
         events: {
             "submit #reactor_conditions": "validateForm",
+            "change #reactor_conditions": "updateExportData",
+            "keyup #reactor_conditions": "updateExportData",
+
         },  // Add menu here
         initialize: function(options){
             var self = this;
@@ -40,7 +43,7 @@ function(Backbone, Handlebars, d3, GraphView, SummaryView, layoutTPL){
 
         render: function(){
             var self = this;
-            self.$el.html(self.menu_tpl);
+            self.$el.html(self.menu_tpl({system : self.system}));
             return self;
         },
 
@@ -53,7 +56,11 @@ function(Backbone, Handlebars, d3, GraphView, SummaryView, layoutTPL){
 
             reactorConditions = $(ev.currentTarget).serializeObject();
             params =  $.param(reactorConditions);
-            console.log(self.src);
+
+            // Update the export data urls
+            //
+
+
             this.fetchDataWithD3(self.src+"?"+params);
         },
 
@@ -65,6 +72,13 @@ function(Backbone, Handlebars, d3, GraphView, SummaryView, layoutTPL){
             });
         },
 
+        updateExportData: function(ev){
+            var self = this;
+            reactorConditions = $(ev.currentTarget).serializeObject();
+            params =  $.param(reactorConditions);
+            self.$el.find("#export_data").prop("href", "/export_data/" + self.system + "/?" + params);
+        },
+
         /*
         This view generates the required views based on the data coming form the back end
         */
@@ -72,11 +86,11 @@ function(Backbone, Handlebars, d3, GraphView, SummaryView, layoutTPL){
             var self = this;
 
             var summary = new SummaryView({data: data.summary});
-            var bioxidation = new GraphView({data: data.bioxidation,
+            var bioxidation = new SystemView({data: data.bioxidation,
                                             section: "bioxidation",
                                             el: "#bioxidation-container"});
 
-            var chemical = new GraphView({data: data.chemical,
+            var chemical = new SystemView({data: data.chemical,
                                          section: "chemical",
                                          el: "#chemical-container"});
             self.current_views.push(summary, bioxidation, chemical);

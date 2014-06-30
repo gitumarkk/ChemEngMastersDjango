@@ -3,11 +3,11 @@ from django.conf.urls import patterns, url
 
 urlpatterns = patterns('',
     # Examples:
-    url(r'^$',
-        'masters.apps.display.views.home',
-        name='home'),
+    # url(r'^$',
+    #     'masters.apps.display.views.home',
+    #     name='home'),
 
-    url(r'^simulations/$',
+    url(r'^$',
         'masters.apps.display.views.simulation',
         name='simulation'),
 
@@ -26,4 +26,8 @@ urlpatterns = patterns('',
     url(r'^system_run/(?P<system_type>.+)/$',
         'masters.apps.display.views.system_run',
         name='system_run'),
+
+    url(r'^export_data/(?P<system_type>.+)/$',
+        'masters.apps.display.views.export_data',
+        name='export_data'),
 )

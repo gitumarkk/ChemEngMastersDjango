@@ -25,7 +25,8 @@ class TestReactors(TestCase):
         self.assertEqual(cstr.flow_in, upstream.flow_out)
         self.assertEqual(cstr.flow_in, cstr.flow_out)
         self.assertIsNotNone(cstr.flow_in)
-        self.assertEqual(cstr.ions[biox_rate.reactant_name], 0)
+
+        # self.assertEqual(cstr.ions[biox_rate.reactant_name], 0)
 
         output = cstr.run()
 
@@ -58,7 +59,7 @@ class TestReactors(TestCase):
         self.assertEqual(cstr.flow_in, cstr.flow_out)
         self.assertIsNotNone(cstr.flow_in)
 
-        self.assertEqual(cstr.ions[copper_rate.reactant_name], 0)
+        # self.assertEqual(cstr.ions[copper_rate.reactant_name], 0)
 
         output = cstr.run()
 

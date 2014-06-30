@@ -54,13 +54,13 @@ function(Backbone, Handlebars, d3, d3_graphs, graphTPL){
             ferric_obj.graph_container("#"+self.section+"-ferric-out");
             ferric_obj.add_ferric_data(self.data);
 
-            var ferrous_obj_in = d3_graphs();
-            ferrous_obj_in.graph_container("#"+self.section+"-ferrous-in");
-            ferrous_obj_in.add_ferrous_data_in(self.data);
+            // var ferrous_obj_in = d3_graphs();
+            // ferrous_obj_in.graph_container("#"+self.section+"-ferrous-in");
+            // ferrous_obj_in.add_ferrous_data_in(self.data);
 
-            var ferric_obj_in = d3_graphs();
-            ferric_obj_in.graph_container("#"+self.section+"-ferric-in");
-            ferric_obj_in.add_ferric_data_in(self.data);
+            // var ferric_obj_in = d3_graphs();
+            // ferric_obj_in.graph_container("#"+self.section+"-ferric-in");
+            // ferric_obj_in.add_ferric_data_in(self.data);
 
             return self;
         },

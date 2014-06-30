@@ -79,10 +79,11 @@ define(["d3"], function(d3){
                 // Magic occures in line 7853 of d3.js
                 var ferrous_out = d3.svg.line()
                                     .x(function(d) { return self.x(d.step); })
-                                        .y(function(d) { return self.y(d.flow_out.components.ferrous); });
+                                        .y(function(d) { return self.y(d.ions.ferrous); });
 
                 self.x.domain(d3.extent(data, function(d) { return d.step; }));
-                self.y.domain(d3.extent(data, function(d) { return d.flow_out.components.ferrous; }));
+                self.y.domain(d3.extent(data, function(d) { return d.ions.ferrous; }));
+                // self.y.domain(d3.extent(data, function(d) { return d.flow_out.components.ferrous; }));
                 // Multi Series Plot
 
                 // var sys_data = self.color.domain().map(function(){
@@ -155,7 +156,7 @@ define(["d3"], function(d3){
                                     .attr("y", 6)
                                         .attr("dy", ".71em")
                                             .style("text-anchor", "end")
-                                                .text("[Ferric Concentration mol/m^-3]");
+                                                .text("[Ferric Concentration mol/l]");
 
                 return self;
 
@@ -195,7 +196,7 @@ define(["d3"], function(d3){
                                     .attr("y", 6)
                                         .attr("dy", ".71em")
                                             .style("text-anchor", "end")
-                                                .text("[Ferric Concentration mol/m^-3]");
+                                                .text("[Ferric Concentration mol/l]");
 
                 return self;
 
@@ -203,7 +204,7 @@ define(["d3"], function(d3){
 
             append_copper: function(data){
                 var self = this;
-                console.log(data);
+
                 var copper = d3.svg.line()
                                     .x(function(d) { return self.x(d.step); })
                                         .y(function(d) { return self.y(d.cstr_data.components.Cu.metal_moles); });
@@ -235,7 +236,7 @@ define(["d3"], function(d3){
                                     .attr("y", 6)
                                         .attr("dy", ".71em")
                                             .style("text-anchor", "end")
-                                                .text("[Copper Concentration mol/m^-3]");
+                                                .text("[Copper Concentration mol/l]");
 
                 return self;
 
@@ -275,7 +276,7 @@ define(["d3"], function(d3){
                                     .attr("y", 6)
                                         .attr("dy", ".71em")
                                             .style("text-anchor", "end")
-                                                .text("[Cupric Concentration mol/m^-3]");
+                                                .text("[Cupric Concentration mol/l]");
 
                 return self;
 
