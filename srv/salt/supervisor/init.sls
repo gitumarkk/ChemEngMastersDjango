@@ -17,6 +17,6 @@ supervisor.conf:
         - source: salt://supervisor/django.conf
 
     service.running:
-        - enabled: True
+        - enable: True
         - watch:
             - file: /etc/supervisor/conf.d/django.conf
