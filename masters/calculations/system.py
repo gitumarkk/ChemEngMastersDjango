@@ -9,22 +9,29 @@ from masters.calculations import constants
 
 
 class System(object):
-    def __init__(self, biox_volume, chem_volume, initial_copper, ferric_ferrous, total_iron):
+    def __init__(self, biox_volume, chem_volume, ferric_ferrous, total_iron, initial_metals={}):
         self.units = []
         self.biox_volume = biox_volume or 1.0
         self.chem_volume = chem_volume or 1.0
-        self.initial_copper = (initial_copper or 2) / 63.5  # Need to divide by Volume / self.chem_volume
+        # self.initial_copper = (initial_copper or 2) / 63.5  # Need to divide by Volume / self.chem_volume
         self.ferric_ferrous = ferric_ferrous or 1000.0
         self.total_iron = (9.0 or total_iron) # Converting to g/m^3
 
         self.ferrous = self.calculate_initial_ferrous_conc() / 55.85
         self.ferric = self.calculate_initial_ferric_conc() / 55.85
 
+        self.initial_metals = self.convert_initial_metals_to_moles(initial_metals)
+
         self.img = None
         self.system_type = None
         self.system_components = [] # List of all the ions in the system
         self.MAX_TIME = 10 # seconds
         self.FINAL_CONVERSION = 0.99
+
+    def convert_initial_metals_to_moles(self, initial_metals):
+        for k, v in initial_metals.iteritems():
+            initial_metals[k] = v / constants.RATE_DATA[k]["Mr"]
+        return initial_metals
 
     def calculate_initial_ferric_conc(self):
         return (self.total_iron * self.ferric_ferrous) / (self.ferric_ferrous + 1.0)
@@ -46,6 +53,16 @@ class System(object):
         # Can be a reactor, pump or whatever
         self.units.append(unit)
 
+    def add_reactants_to_chem_cstr(self):
+        for k, v in self.initial_metals.iteritems():
+            metal = reactions.MetalDissolutionRate(
+                        k,
+                        v,
+                        system=constants.CONTINUOUS
+                    )
+            self.chem_cstr.create_components(metal)
+            self.system_components.append(metal.reactant_name)
+
     def build_tanks_in_series(self):
         # Setting up the biox reactor
         self.upstream = reactors.BaseUpStream(ferric=self.ferric,
@@ -58,14 +75,15 @@ class System(object):
         self.system_components.append(self.biox_rate.reactant_name)
 
         # Setting up the Chemical Reactor
-        self.copper_rate = reactions.MetalDissolutionRate(
-                                            constants.COPPER,
-                                            self.initial_copper,
-                                            system=constants.CONTINUOUS)
+        # self.copper_rate = reactions.MetalDissolutionRate(
+        #                                     constants.COPPER,
+        #                                     self.initial_copper,
+        #                                     system=constants.CONTINUOUS)
         self.chem_cstr = self.create_reactor(reactors.CSTR, self.chem_volume, self.biox_cstr)
-        self.chem_cstr.create_components(self.copper_rate)
+        self.add_reactants_to_chem_cstr()
+        # self.chem_cstr.create_components(self.copper_rate)
         # That the system can be aware of all ions/ reactants
-        self.system_components.append(self.copper_rate.reactant_name)
+        # self.system_components.append(self.copper_rate.reactant_name)
 
         self.add_system_ions_to_reactors()
         self.img = "/static/img/system/tanks_in_series.png"
@@ -86,13 +104,14 @@ class System(object):
         self.system_components.append(self.biox_rate.reactant_name)
 
         # Setting up the Chemical Reactor
-        self.copper_rate = reactions.MetalDissolutionRate(
-                                            constants.COPPER,
-                                            self.initial_copper,
-                                            system=constants.CONTINUOUS)
+        # self.copper_rate = reactions.MetalDissolutionRate(
+        #                                     constants.COPPER,
+        #                                     self.initial_copper,
+        #                                     system=constants.CONTINUOUS)
         self.chem_cstr = self.create_reactor(reactors.CSTR, self.chem_volume, self.biox_cstr)
-        self.chem_cstr.create_components(self.copper_rate)
-        self.system_components.append(self.copper_rate.reactant_name)
+        # self.chem_cstr.create_components(self.copper_rate)
+        # self.system_components.append(self.copper_rate.reactant_name)
+        self.add_reactants_to_chem_cstr()
 
         # Updating the biox_cstr upstream
         self.biox_cstr.upstream = self.chem_cstr
@@ -120,6 +139,15 @@ class System(object):
     def convert_to_minutes(self, i):
         return i / 60.0
 
+    def check_conversion_above_threshohold(self):
+        """
+        Checks if the cummulative conversion is over the specified threshold
+        """
+        total_initial_conc = sum([v for k,v in self.initial_metals.iteritems()])
+        total_current_conc = sum([ component.metal_conc for component in self.chem_cstr.components])
+        # print total_initial_conc, total_current_conc
+        return total_current_conc < ((1 - self.FINAL_CONVERSION) * total_initial_conc)
+
     def run(self):
         biox_list = []
         chem_list = []
@@ -131,7 +159,9 @@ class System(object):
             # temp = {}
             sys_data = self.step()
 
-            if self.copper_rate.metal_conc < (1 - self.FINAL_CONVERSION) * self.initial_copper:
+            # Should be sum of the metal concentrations
+            # If sum(self.metals_rate) < sum(self.initial_rates)
+            if self.check_conversion_above_threshohold():
                 status = {"success": True, "message": "Simulation completed succesfully"}
                 break
 
@@ -139,7 +169,8 @@ class System(object):
                 status = {"success": False, "message": "Simulation reached max time of %s" % self.MAX_TIME}
                 break
 
-            final_copper_conc = self.copper_rate.metal_conc
+            # final_copper_conc = self.copper_rate.metal_conc
+            final_metal_conc = {component.reactant_name: component.metal_conc for component in self.chem_cstr.components}
 
             sys_data[0].update({"step": self.convert_to_minutes(i)})
             sys_data[1].update({"step": self.convert_to_minutes(i)})
@@ -156,9 +187,9 @@ class System(object):
                                              "volume": self.biox_volume,
                                              "equation": "",
                                              "dilution": self.biox_cstr.get_dilution_rate()},
-                             "chemical": {"initial_copper_conc": self.initial_copper,
-                                           "final_copper_conc": final_copper_conc,
-                                           "conversion": (self.initial_copper - final_copper_conc) / self.initial_copper,
+                             "chemical": {"initial_metal_conc": self.initial_metals,
+                                           "final_metal_conc": final_metal_conc,
+                                           # "conversion": (self.initial_copper - final_copper_conc) / self.initial_copper,
                                            "volume": self.chem_volume,
                                            "equation": "",
                                            "dilution": self.chem_cstr.get_dilution_rate()},

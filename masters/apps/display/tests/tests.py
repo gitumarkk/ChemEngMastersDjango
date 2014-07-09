@@ -54,10 +54,39 @@ class TestViews(TestCase):
         self.assertIn("ferric_ferrous", item_0)
         self.assertIn("rate_ferrous", item_0)
 
-    def test_system_with_tanks_in_series(self):
+    def test_system_with_tanks_in_series_copper_data(self):
+        url = reverse("system_run", kwargs={"system_type": "tanks_in_series"})
+
+        response = self.client.get("%s?Cu=2" % url, follow=True)
+
+        response_json = json.loads(response.content)
+        biox_0 = response_json["bioxidation"][0]
+        chem_0 = response_json["chemical"][0]
+
+        # item_0 = response_json[0]
+
+        self.assertIn("chemical", response_json)
+        self.assertIn("bioxidation", response_json)
+        self.assertIn("summary", response_json)
+
+        self.assertIn("step", biox_0)
+        self.assertIn("step", chem_0)
+
+        self.assertIn("total_rate_ferric", biox_0["cstr_data"])
+
+    def test_system_with_tanks_in_series_no_data(self):
         url = reverse("system_run", kwargs={"system_type": "tanks_in_series"})
 
         response = self.client.get(url, follow=True)
+
+        response_json = json.loads(response.content)
+        self.assertEqual(response_json["success"], False)
+
+
+    def test_system_with_tanks_in_series_multiple_data(self):
+        url = reverse("system_run", kwargs={"system_type": "tanks_in_series"})
+
+        response = self.client.get("%s?Cu=2&Sn=0.5&Zn=0.5" % url, follow=True)
 
         response_json = json.loads(response.content)
         biox_0 = response_json["bioxidation"][0]
