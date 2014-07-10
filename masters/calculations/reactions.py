@@ -2,6 +2,10 @@ from masters.calculations import constants
 
 import numpy as np
 
+# Raise all numpy exceptions
+np.seterr(all='raise')
+
+
 class BioxidationRate(object):
     """
     The initial rate assumes a CSTR
@@ -57,12 +61,19 @@ class MetalDissolutionRate(object):
         self.metal_ion = 0
 
     def metal_powder_rate(self):
-        # Copper concentration depends on the next step
-        K = constants.RATE_DATA[self.reactant_name]["equation"]["k"] # s-1
-        a = constants.RATE_DATA[self.reactant_name]["equation"]["a"]
-        b = constants.RATE_DATA[self.reactant_name]["equation"]["b"]
+        # Return 0 rate when the initial metal decreases to negative
+        if self.metal_conc < 0:
+            return 0
 
-        rate_ferric = K * np.power(self.metal_conc, a) * np.power(self.ferric, b)
+        K = constants.RATE_DATA[self.reactant_name]["equation"]["k"] # s-1
+        alpha = constants.RATE_DATA[self.reactant_name]["equation"]["a"]
+        beta = constants.RATE_DATA[self.reactant_name]["equation"]["b"]
+
+        # try:
+        rate_ferric = K * np.power(self.metal_conc, alpha) * np.power(self.ferric, beta)
+        # except:
+        #     import ipdb; ipdb.set_trace()
+
         self.update_metal_reactant_concentration(rate_ferric)
         self.update_metal_ion_concentration()
         return rate_ferric
@@ -70,7 +81,7 @@ class MetalDissolutionRate(object):
     def update_metal_reactant_concentration(self, rate_ferric):
         # Problem here is thar for a multi COMPONENT SYSTEM NEED TO UPDATE
         # CONCENTRATIONS FROM OUTSIDE THE SYSTEM
-        self.metal_conc = self.metal_conc + rate_ferric / 2.  # 2 for now beacuse of copper
+        self.metal_conc = self.metal_conc + (rate_ferric / float(constants.RATE_DATA[self.reactant_name]["stoichiometry"]))
 
     def update_metal_ion_concentration(self):
         self.metal_ion = self.metal_initial - self.metal_conc
@@ -94,7 +105,7 @@ class MetalDissolutionRate(object):
         """
         Assuming a stoichiometric ratio of r_Cu2+ = r_Fe2+ / n
         """
-        return rate_ferrous / 2
+        return rate_ferrous / float(constants.RATE_DATA[self.reactant_name]["stoichiometry"])
 
 
     def ferric_to_ferrous(self, rate_ferric):

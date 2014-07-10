@@ -202,21 +202,21 @@ define(["d3"], function(d3){
 
             },
 
-            append_copper: function(data){
+            append_metal: function(data, symbol, name){
                 var self = this;
 
-                var copper = d3.svg.line()
+                var metal = d3.svg.line()
                                     .x(function(d) { return self.x(d.step); })
-                                        .y(function(d) { return self.y(d.cstr_data.components.Cu.metal_moles); });
+                                        .y(function(d) { return self.y(d.cstr_data.components[symbol].metal_moles); });
 
                 self.x.domain(d3.extent(data, function(d) { return d.step; }));
-                self.y.domain(d3.extent(data, function(d) { return d.cstr_data.components.Cu.metal_moles; }));
+                self.y.domain(d3.extent(data, function(d) { return d.cstr_data.components[symbol].metal_moles; }));
 
                 self.svg.append("path")
                             .datum(data)
                                 .attr("class", "line")
                                     .style("stroke", "red")
-                                        .attr("d", copper);
+                                        .attr("d", metal);
 
                 self.svg.append("g")
                     .attr("class", "x axis")
@@ -236,27 +236,27 @@ define(["d3"], function(d3){
                                     .attr("y", 6)
                                         .attr("dy", ".71em")
                                             .style("text-anchor", "end")
-                                                .text("[Copper Concentration mol/l]");
+                                                .text("["+ name + " Concentration mol/l]");
 
                 return self;
 
             },
 
-            append_cupric: function(data){
+            append_metal_ion: function(data, symbol, name){
                 var self = this;
                 // console.log(data);
-                var copper = d3.svg.line()
+                var metal_ion = d3.svg.line()
                                     .x(function(d) { return self.x(d.step); })
-                                        .y(function(d) { return self.y(d.ions.Cu); });
+                                        .y(function(d) { return self.y(d.ions[symbol]); });
 
                 self.x.domain(d3.extent(data, function(d) { return d.step; }));
-                self.y.domain(d3.extent(data, function(d) { return d.ions.Cu; }));
+                self.y.domain(d3.extent(data, function(d) { return d.ions[symbol]; }));
 
                 self.svg.append("path")
                             .datum(data)
                                 .attr("class", "line")
                                     .style("stroke", "red")
-                                        .attr("d", copper);
+                                        .attr("d", metal_ion);
 
                 self.svg.append("g")
                     .attr("class", "x axis")
@@ -276,11 +276,11 @@ define(["d3"], function(d3){
                                     .attr("y", 6)
                                         .attr("dy", ".71em")
                                             .style("text-anchor", "end")
-                                                .text("[Cupric Concentration mol/l]");
+                                                .text("["+name+" Concentration mol/l]");
 
                 return self;
 
-            }
+            },
         };
     };
     return d3_graphs;

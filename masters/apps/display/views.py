@@ -66,7 +66,9 @@ def system_run(request, system_type=None):
     print "started"
     data = process_get_parameters(request, system_type)
     if not data:
-        data = {"success": False, "message": "Please choose attleast one metal conc"}
+        data = {"success": False,
+                "message": "Please choose attleast one metal conc",
+                "type": "error"}
     json_data = dumps(data)
     print "complete"
     return HttpResponse(json_data, content_type='application/json')
