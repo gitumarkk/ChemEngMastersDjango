@@ -86,16 +86,18 @@ class TestReactors(TestCase):
 class TestRunningSystem(TestCase):
     def setUp(self):
         self.volume_cstr = 1 # m^3
-        self.copper_conc = 2 / 63.5  #mol.m^-3
+        self.copper_conc = 2 #mol.m^-3
         self.ferric_ferrous = 1000
         self.total_iron = 9
 
     def test_system_runs_okay_with_cyclic_tanks_model(self):
+        initial_metals = {constants.COPPER: self.copper_conc}
+
         sys = system.System(self.volume_cstr,
                             self.volume_cstr,
-                            self.copper_conc,
                             self.ferric_ferrous,
-                            self.total_iron)
+                            self.total_iron,
+                            initial_metals=initial_metals)
         sys.build_cyclic_tanks()
 
         self.assertEqual(sys.biox_cstr.upstream, sys.chem_cstr)
@@ -121,12 +123,14 @@ class TestRunningSystem(TestCase):
         # pass
 
     def test_system_runs_okay_with_tanks_in_series_model(self):
+        initial_metals = {constants.COPPER: self.copper_conc}
+
         # BaseUpstream -> Bioxidation -> CSTR ->
         sys = system.System(self.volume_cstr,
                             self.volume_cstr,
-                            self.copper_conc,
                             self.ferric_ferrous,
-                            self.total_iron)
+                            self.total_iron,
+                            initial_metals=initial_metals)
 
         # upstream = reactors.BaseUpStream()
         sys.build_tanks_in_series()
@@ -184,7 +188,7 @@ class TestReactionRates(TestCase):
         copper_conc = 2/65.3
         ferric_conc = 0.0001
         copper = reactions.MetalDissolutionRate(constants.COPPER, copper_conc, ferric_conc)
-        rate_ferric = copper.copper_metal_powder_rate()
+        rate_ferric = copper.metal_powder_rate()
 
     def test_biox_reaction_rate(self):
         ferrous_conc = 0.01

@@ -2,6 +2,10 @@ from masters.calculations import constants
 
 import numpy as np
 
+# Raise all numpy exceptions
+np.seterr(all='raise')
+
+
 class BioxidationRate(object):
     """
     The initial rate assumes a CSTR
@@ -56,12 +60,20 @@ class MetalDissolutionRate(object):
         self.system = system or constants.BATCH
         self.metal_ion = 0
 
-    def copper_metal_powder_rate(self):
-        # Copper concentration depends on the next step
-        K = -0.0042 # s-1
-        a = 0.5
-        b = 0.64
-        rate_ferric = K * np.power(self.metal_conc, a) * np.power(self.ferric, b)
+    def metal_powder_rate(self):
+        # Return 0 rate when the initial metal decreases to negative
+        if self.metal_conc < 0:
+            return 0
+
+        K = constants.RATE_DATA[self.reactant_name]["equation"]["k"] # s-1
+        alpha = constants.RATE_DATA[self.reactant_name]["equation"]["a"]
+        beta = constants.RATE_DATA[self.reactant_name]["equation"]["b"]
+
+        # try:
+        rate_ferric = K * np.power(self.metal_conc, alpha) * np.power(self.ferric, beta)
+        # except:
+        #     import ipdb; ipdb.set_trace()
+
         self.update_metal_reactant_concentration(rate_ferric)
         self.update_metal_ion_concentration()
         return rate_ferric
@@ -69,7 +81,7 @@ class MetalDissolutionRate(object):
     def update_metal_reactant_concentration(self, rate_ferric):
         # Problem here is thar for a multi COMPONENT SYSTEM NEED TO UPDATE
         # CONCENTRATIONS FROM OUTSIDE THE SYSTEM
-        self.metal_conc = self.metal_conc + rate_ferric / 2.  # 2 for now beacuse of copper
+        self.metal_conc = self.metal_conc + (rate_ferric / float(constants.RATE_DATA[self.reactant_name]["stoichiometry"]))
 
     def update_metal_ion_concentration(self):
         self.metal_ion = self.metal_initial - self.metal_conc
@@ -93,7 +105,7 @@ class MetalDissolutionRate(object):
         """
         Assuming a stoichiometric ratio of r_Cu2+ = r_Fe2+ / n
         """
-        return rate_ferrous / 2
+        return rate_ferrous / float(constants.RATE_DATA[self.reactant_name]["stoichiometry"])
 
 
     def ferric_to_ferrous(self, rate_ferric):
@@ -103,19 +115,19 @@ class MetalDissolutionRate(object):
         return rate_ferric * (-1)
 
     def run(self):
-        if self.reactant_name == constants.COPPER:
-            rate_ferric = self.copper_metal_powder_rate()
+        # if self.reactant_name == constants.COPPER["symbol"]:
+        rate_ferric = self.metal_powder_rate()
 
-            # This should not be updated here but by the actual reactor
-            self.update_metal_reactant_concentration(rate_ferric)
-            rate_ferrous = self.ferric_to_ferrous(rate_ferric)
+        # This should not be updated here but by the actual reactor
+        self.update_metal_reactant_concentration(rate_ferric)
+        rate_ferrous = self.ferric_to_ferrous(rate_ferric)
 
-            data = {
-                "rate_ferrous": rate_ferrous,
-                "rate_ferric": rate_ferric,
-                "metal_moles": self.metal_conc,
-                "ion_moles": self.metal_initial - self.metal_conc,
-                "rate_metal": self.rate_metal_reaction(rate_ferrous)
-            }
-            # return rate_ferrous, rate_ferric, self.metal_conc #, self.metal_ion
-            return data
+        data = {
+            "rate_ferrous": rate_ferrous,
+            "rate_ferric": rate_ferric,
+            "metal_moles": self.metal_conc,
+            "ion_moles": self.metal_initial - self.metal_conc,
+            "rate_metal": self.rate_metal_reaction(rate_ferrous)
+        }
+        # return rate_ferrous, rate_ferric, self.metal_conc #, self.metal_ion
+        return data

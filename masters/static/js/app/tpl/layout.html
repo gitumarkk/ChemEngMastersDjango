@@ -1,24 +1,70 @@
 <div class="row submenu-top">
     <div class="large-12 columns">
         <form id="reactor_conditions" action="">
-            <div class="large-2 columns">
-                Initial Copper (g) <input type="text" name="initialCopper" value="2">
+            <div class="row">
+                <div class="large-3 columns">
+                    Total Iron (g/l) <input type="text" name="totalIron" value="9">
+                </div>
+
+                <div class="large-3 columns">
+                    Fe3+ / Fe3+ <input type="text" name="ferricFerrousRatio" value="1000">
+                </div>
+
+                <div class="large-3 columns">
+                    Biox Vol (l) <input type="text" name="bioxidationVolume" value="1">
+                </div>
+
+                <div class="large-3 columns">
+                    Chem Vol (l) <input type="text" name="chemicalVolume" value="1">
+                </div>
+                <div class="large-3 columns"></div>
             </div>
 
-            <div class="large-2 columns">
-                Total Iron (g/l) <input type="text" name="totalIron" value="9">
+            <hr>
+
+            <div class="row">
+                <div class="large-4 columns">Initial Copper (g) </div>
+                <div class="large-4 columns"><input type="checkbox" class="Cu" checked></div>
+                <div class="large-4 columns"><input id="Cu" type="text" name="Cu" value="2"></div>
             </div>
 
-            <div class="large-2 columns">
-                Fe3+ / Fe3+ <input type="text" name="ferricFerrousRatio" value="1000">
+            <div class="row">
+                <div class="large-4 columns">Initial Zinc (g) </div>
+                <div class="large-4 columns"><input type="checkbox" class ="Zn"></div>
+                <div class="large-4 columns"><input id="Zn" type="text" name="Zn" value="0.0" disabled></div>
             </div>
 
-            <div class="large-2 columns">
-                Biox Vol (l) <input type="text" name="bioxidationVolume" value="1">
+            <div class="row">
+                <div class="large-4 columns">Initial Tin (g) </div>
+                <div class="large-4 columns"><input type="checkbox" class ="Sn"></div>
+                <div class="large-4 columns"><input id="Sn" type="text" name="Sn" value="0.0" disabled></div>
+
             </div>
 
-            <div class="large-2 columns">
-                Chem Vol (l) <input type="text" name="chemicalVolume" value="1">
+            <hr>
+
+            <div class="row">
+                <div class="large-4 columns"></div>
+                <div class="large-4 columns">
+                    <a id="export_data" class="button small right" href="/export_data/{{system}}/?Cu=2&totalIron=9&ferricFerrousRatio=1000&bioxidationVolume=1&chemicalVolume=1" target="_blank">Export as excel</a>
+                </div>
+                <div class="large-4 columns">
+                    <button class="button small right" type="submit"> Submit </button>
+                </div>
+            </div>
+
+            <hr>
+                <!--<div class="large-2 columns">
+                    Initial Copper (g) <input type="text" name="Cu" value="2">
+                </div>
+
+                <div class="large-2 columns">
+                    Initial Zinc (g) <input type="text" name="Zn" value="0.5">
+                </div>
+
+                <div class="large-2 columns">
+                    Initial Tin (g) <input type="text" name="Sn" value="0.5">
+                </div>
             </div>
 
             <div class="large-2 columns">
@@ -27,7 +73,7 @@
 
             <div class="large-2 columns">
                 <a id="export_data" class="button small right" href="/export_data/{{system}}/?initialCopper=2&totalIron=9&ferricFerrousRatio=1000&bioxidationVolume=1&chemicalVolume=1" target="_blank">Export as excel</a>
-            </div>
+            </div>-->
         </form>
     </div>
 </div>

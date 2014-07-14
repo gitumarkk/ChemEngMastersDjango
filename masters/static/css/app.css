@@ -7792,6 +7792,18 @@ th.hide-for-touch {
   display: table-cell !important;
 }
 
+/* line 5, ../scss/site/_layouts.scss */
+.loading {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  min-height: 100%;
+  background: rgba(240, 240, 240, 0.8) url(/static/img/ajax-loader.gif) center no-repeat;
+  z-index: 100;
+  display: block;
+}
+
 /* line 3, ../scss/site/_navigations.scss */
 .simulation-side-nav {
   position: fixed;

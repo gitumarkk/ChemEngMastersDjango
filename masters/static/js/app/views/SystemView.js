@@ -38,9 +38,13 @@ function(Backbone, Handlebars, d3, d3_graphs, graphTPL){
         plotGraphs: function(){
             var self = this;
             self.ferricGraphs();
-            self.cupricGraphs();
+            self.metalIonGraphs("Cu", "copper");
+            self.metalIonGraphs("Sn", "tin");
+            self.metalIonGraphs("Zn", "zinc");
             if (self.section === "chemical") {
-                self.copperGraphs();
+                self.metalGraphs("Cu", "copper");
+                self.metalGraphs("Sn", "tin");
+                self.metalGraphs("Zn", "zinc");
             }
             return self;
         },
@@ -64,18 +68,18 @@ function(Backbone, Handlebars, d3, d3_graphs, graphTPL){
 
             return self;
         },
-        copperGraphs: function(){
+        metalGraphs: function(symbol, name){
             var self = this;
-            var copper_obj = d3_graphs();
-            copper_obj.graph_container("#"+self.section+"-copper");
-            copper_obj.append_copper(self.data);
+            var obj = d3_graphs();
+            obj.graph_container("#"+self.section+"-"+name);
+            obj.append_metal(self.data, symbol, name);
             return self;
         },
-        cupricGraphs: function(){
+        metalIonGraphs: function(symbol, name){
             var self = this;
-            var cupric_obj = d3_graphs();
-            cupric_obj.graph_container("#"+self.section+"-cupric");
-            cupric_obj.append_cupric(self.data);
+            var obj = d3_graphs();
+            obj.graph_container("#"+self.section+"-"+name+"-ion");
+            obj.append_metal_ion(self.data, symbol, name);
             return self;
         },
         compileTemplate: function() {

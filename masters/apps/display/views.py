@@ -65,6 +65,10 @@ def single_reactor(request, reactor_type=None):
 def system_run(request, system_type=None):
     print "started"
     data = process_get_parameters(request, system_type)
+    if not data:
+        data = {"success": False,
+                "message": "Please choose attleast one metal conc",
+                "type": "error"}
     json_data = dumps(data)
     print "complete"
     return HttpResponse(json_data, content_type='application/json')
@@ -86,12 +90,22 @@ def process_get_parameters(_request, _system_type):
     chemicalVolume = _request.GET.get('chemicalVolume', 0)
     bioxidationVolume = _request.GET.get('bioxidationVolume', 0)
     totalIron = _request.GET.get("totalIron", 0)
-    initialCopper = _request.GET.get('initialCopper', 0)
+    # initialCopper = _request.GET.get('initialCopper', 0)
+
+    initial_metals = {
+        "Cu": float(_request.GET.get('Cu', 0)),
+        "Sn": float(_request.GET.get('Sn', 0)),
+        "Zn": float(_request.GET.get('Zn', 0)),
+    }
+
+    if sum([v for k,v in initial_metals.iteritems()]) == 0:
+        return False
+
     sys = system.System(float(bioxidationVolume),
                             float(chemicalVolume),
-                            float(initialCopper),
                             float(ferricFerrousRatio),
-                            float(totalIron))
+                            float(totalIron),
+                            initial_metals=initial_metals)
 
     data = []
     if _system_type == "tanks_in_series":

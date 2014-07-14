@@ -22,6 +22,7 @@ function(Backbone, Handlebars, d3, SystemView, SummaryView, layoutTPL){
             "submit #reactor_conditions": "validateForm",
             "change #reactor_conditions": "updateExportData",
             "keyup #reactor_conditions": "updateExportData",
+            "click #reactor_conditions [type='checkbox']": "toggleMetalInput",
 
         },  // Add menu here
         initialize: function(options){
@@ -32,7 +33,6 @@ function(Backbone, Handlebars, d3, SystemView, SummaryView, layoutTPL){
 
             self.current_views = [];
             _.bindAll(self, "assignViews");
-            console.log("layout view initialized");
             self.type = options.type;
             self.system = options.system;
             self.src = options.src;
@@ -68,6 +68,8 @@ function(Backbone, Handlebars, d3, SystemView, SummaryView, layoutTPL){
             var self = this;
             self.emptyCurrentViews();
             d3.json(url, function(error, data){
+                console.log("success fetching data");
+                console.log(error);
                 self.assignViews(data);
             });
         },
@@ -77,6 +79,21 @@ function(Backbone, Handlebars, d3, SystemView, SummaryView, layoutTPL){
             reactorConditions = $(ev.currentTarget).serializeObject();
             params =  $.param(reactorConditions);
             self.$el.find("#export_data").prop("href", "/export_data/" + self.system + "/?" + params);
+        },
+
+        toggleMetalInput: function(ev){
+            var self = this;
+            var $checkbox = $(ev.currentTarget);
+
+            var metal_name = $checkbox.attr("class");
+            $metal_input = self.$el.find("#reactor_conditions #"+ metal_name);
+            if ($metal_input.attr('disabled')) {
+                $metal_input.removeAttr('disabled');
+            } else {
+                $metal_input.attr('disabled', 'disabled');
+                $metal_input.val(0.0);
+            }
+            return self;
         },
 
         /*

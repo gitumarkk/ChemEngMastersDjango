@@ -93,6 +93,7 @@ require(['jquery', "backbone", "routers/router"], function($, Backbone, AppRoute
     $(document).ready(function() {
         Backbone.history.start();
         var app_router = new AppRouter({silence:true});  // Prevent initial route '' from being invoked
-        alert("ready");
+        // alert("ready");
+        $("body").find(".loading").remove();
     });
 });
