@@ -102,3 +102,8 @@ class TestViews(TestCase):
         self.assertIn("step", chem_0)
 
         self.assertIn("total_rate_ferric", biox_0["cstr_data"])
+
+    def test_export_as_csv(self):
+        url = reverse("export_data", kwargs={"system_type": "tanks_in_series"})
+
+        response = self.client.get("%s?Cu=2&Sn=0.5&Zn=0.5" % url, follow=True)
