@@ -151,6 +151,7 @@ class System(object):
     def run(self):
         biox_list = []
         chem_list = []
+        summary_list = []
 
         t0 = time.clock()
 
@@ -177,6 +178,8 @@ class System(object):
 
             biox_list.append(sys_data[0])
             chem_list.append(sys_data[1])
+            summary_list.append({"step": self.convert_to_minutes(i),
+                                "rate_ratio": abs(sys_data[1]["cstr_data"]["total_rate_ferric"] / sys_data[0]["cstr_data"]["total_rate_ferric"])})
 
             i = i + 1
 
@@ -196,7 +199,8 @@ class System(object):
                             "combined": {"VChem_VBiox": self.chem_volume/self.biox_volume,
                                          "System Type": self.system_type},
                             "system": {"img": self.img},
-                            "status": status
+                            "status": status,
+                            "data": summary_list
                             }
                 }
         print self.img

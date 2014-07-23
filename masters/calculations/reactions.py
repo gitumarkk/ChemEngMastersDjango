@@ -13,7 +13,8 @@ class BioxidationRate(object):
     def __init__(self, ferric_initial=None, ferrous_initial=None):
         self.ferric = ferric_initial or 0.
         self.ferrous = ferrous_initial or 0.
-        self.reactant_name = "Bacteria"
+        self.reactant_name = "Biomass"
+        self.biomass_conc = 1  # Assuming an initial biomass concentration
 
     def __unicode__(self):
         return u"BIOX"
@@ -21,13 +22,20 @@ class BioxidationRate(object):
     def inhibited(self):
         pass
 
+    def update_biomass_concentration(self):
+        self.biomass_conc
+        Ks = 1
+        k_d = 0
+        u_max = self.ferrous / (Ks + self.ferrous)
+        rate_biomss = self.biomass_conc * (u_max  - k_d)
+        self.biomass_conc = self.biomass_conc + (1 * rate_biomss)
+
     def simplified_hansford(self):
-        bacteria_conc = 1
         q_spec_growth_rate = 1
 
         temp_C_x_q_spec_growth_rate = 1.2e-5 # (mol.m^-3.s^-1)
         K = 5e-3
-        rate_ferrous = - (temp_C_x_q_spec_growth_rate) / (1 + (K * np.divide(self.ferric, self.ferrous)))
+        rate_ferrous = - (self.biomass_conc * temp_C_x_q_spec_growth_rate) / (1 + (K * np.divide(self.ferric, self.ferrous)))
         return rate_ferrous
 
     def update_global_reactant_concentrations(self, ferric, ferrous):
@@ -69,8 +77,13 @@ class MetalDissolutionRate(object):
         alpha = constants.RATE_DATA[self.reactant_name]["equation"]["a"]
         beta = constants.RATE_DATA[self.reactant_name]["equation"]["b"]
 
+        if self.ferric == 0:
+            # This is because np.power(self.ferric, beta) = 1 if self.ferric = 0 and beta = 0 i.e. 0^0 = 1
+            # Occurs in the case of Zinc
+            rate_ferric = 0
+        else:
+            rate_ferric = K * np.power(self.metal_conc, alpha) * np.power(self.ferric, beta)
         # try:
-        rate_ferric = K * np.power(self.metal_conc, alpha) * np.power(self.ferric, beta)
         # except:
         #     import ipdb; ipdb.set_trace()
 

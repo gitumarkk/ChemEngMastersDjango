@@ -12,7 +12,7 @@ class BaseUpStream(object):
         # ferrous = 9 / 55.85
         ferric = ferric or 9 / 55.85  # / VOLUME
         ferrous = ferrous or ferric / RATIO
-        self.flow_out = flow_out or {"flowrate": 1. / (1 * 60),  # m^3 / s
+        self.flow_out = flow_out or {"flowrate": 1. / (1 * 60),  # l / s
                                     "components": {"ferrous": ferrous , "ferric": ferric}}
 
     def set_flow_out(self, flow_out):
