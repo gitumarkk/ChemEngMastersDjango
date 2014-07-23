@@ -16,6 +16,8 @@ class ExportToExcel(object):
         _r = 1
 
         for k, v in summary_data.iteritems():
+            if k == "data":
+                continue
             _c = 1
             col = get_column_letter(_c)
             ws.cell('%s%s'%(col, _r)).value = k
