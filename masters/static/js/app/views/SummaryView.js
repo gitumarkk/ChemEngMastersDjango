@@ -1,8 +1,10 @@
 define([
 "backbone",
 "handlebars",
+"d3",
+"utils/d3_graphs",
 "text!tpl/summary-view.html"],
-function(Backbone, Handlebars, summaryTPL){
+function(Backbone, Handlebars, d3, d3_graphs, summaryTPL){
     var SummaryView = Backbone.View.extend({
         el: "#summary-container",
         template: summaryTPL,
@@ -18,6 +20,14 @@ function(Backbone, Handlebars, summaryTPL){
         render: function(){
             var self = this;
             self.$el.html(this.compiled_template(self.data));
+            self.summaryGraphs();
+            return self;
+        },
+        summaryGraphs: function(){
+            var self = this;
+            var obj = d3_graphs();
+            obj.graph_container("#rate-ratio");
+            obj.add_rate_ratio(self.data.data);
             return self;
         },
         compileTemplate: function() {

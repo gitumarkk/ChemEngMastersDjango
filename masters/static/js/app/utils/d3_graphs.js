@@ -281,6 +281,46 @@ define(["d3"], function(d3){
                 return self;
 
             },
+
+            add_rate_ratio: function(data, symbol, name){
+                var self = this;
+                // console.log(data);
+                var rate_ratio = d3.svg.line()
+                                    .x(function(d) { return self.x(d.step); })
+                                        .y(function(d) { return self.y(d.rate_ratio); });
+
+                self.x.domain(d3.extent(data, function(d) { return d.step; }));
+                self.y.domain(d3.extent(data, function(d) { return d.rate_ratio; }));
+
+                self.svg.append("path")
+                            .datum(data)
+                                .attr("class", "line")
+                                    .style("stroke", "red")
+                                        .attr("d", rate_ratio);
+
+                self.svg.append("g")
+                    .attr("class", "x axis")
+                        .attr("transform", "translate(0," + self.height + ")")
+                            .call(self.xAxis)
+                                .append("text")
+                                    .attr("y", 20)
+                                        .attr("dy", ".71em")
+                                            .style("text-anchor", "start")
+                                                .text("Time (Min)");
+
+                self.svg.append("g")
+                    .attr("class", "y axis")
+                        .call(self.yAxis)
+                            .append("text")
+                                .attr("transform", "rotate(-90)")
+                                    .attr("y", 6)
+                                        .attr("dy", ".71em")
+                                            .style("text-anchor", "end")
+                                                .text("[Ferric Chem Conc] / [Ferric Biox Conc]");
+
+                return self;
+
+            },
         };
     };
     return d3_graphs;
