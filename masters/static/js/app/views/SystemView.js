@@ -38,13 +38,18 @@ function(Backbone, Handlebars, d3, d3_graphs, graphTPL){
         plotGraphs: function(){
             var self = this;
             self.ferricGraphs();
-            self.metalIonGraphs("Cu", "copper");
-            self.metalIonGraphs("Sn", "tin");
-            self.metalIonGraphs("Zn", "zinc");
+            self.componentIonGraphs("Cu", "copper");
+            self.componentIonGraphs("Sn", "tin");
+            self.componentIonGraphs("Zn", "zinc");
+
+            if (self.section === "bioxidation") {
+                self.componentGraphs("Biomass", "biomass");
+            }
+
             if (self.section === "chemical") {
-                self.metalGraphs("Cu", "copper");
-                self.metalGraphs("Sn", "tin");
-                self.metalGraphs("Zn", "zinc");
+                self.componentGraphs("Cu", "copper");
+                self.componentGraphs("Sn", "tin");
+                self.componentGraphs("Zn", "zinc");
             }
             return self;
         },
@@ -68,18 +73,18 @@ function(Backbone, Handlebars, d3, d3_graphs, graphTPL){
 
             return self;
         },
-        metalGraphs: function(symbol, name){
+        componentGraphs: function(symbol, name){
             var self = this;
             var obj = d3_graphs();
             obj.graph_container("#"+self.section+"-"+name);
-            obj.append_metal(self.data, symbol, name);
+            obj.append_component(self.data, symbol, name);
             return self;
         },
-        metalIonGraphs: function(symbol, name){
+        componentIonGraphs: function(symbol, name){
             var self = this;
             var obj = d3_graphs();
             obj.graph_container("#"+self.section+"-"+name+"-ion");
-            obj.append_metal_ion(self.data, symbol, name);
+            obj.append_component_ion(self.data, symbol, name);
             return self;
         },
         compileTemplate: function() {

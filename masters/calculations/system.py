@@ -144,7 +144,7 @@ class System(object):
         Checks if the cummulative conversion is over the specified threshold
         """
         total_initial_conc = sum([v for k,v in self.initial_metals.iteritems()])
-        total_current_conc = sum([ component.metal_conc for component in self.chem_cstr.components])
+        total_current_conc = sum([ component.component_conc for component in self.chem_cstr.components])
         # print total_initial_conc, total_current_conc
         return total_current_conc < ((1 - self.FINAL_CONVERSION) * total_initial_conc)
 
@@ -170,8 +170,8 @@ class System(object):
                 status = {"success": False, "message": "Simulation reached max time of %s" % self.MAX_TIME}
                 break
 
-            # final_copper_conc = self.copper_rate.metal_conc
-            final_metal_conc = {component.reactant_name: component.metal_conc for component in self.chem_cstr.components}
+            # final_copper_conc = self.copper_rate.component_conc
+            final_component_conc = {component.reactant_name: component.component_conc for component in self.chem_cstr.components}
 
             sys_data[0].update({"step": self.convert_to_minutes(i)})
             sys_data[1].update({"step": self.convert_to_minutes(i)})
@@ -190,8 +190,8 @@ class System(object):
                                              "volume": self.biox_volume,
                                              "equation": "",
                                              "dilution": self.biox_cstr.get_dilution_rate()},
-                             "chemical": {"initial_metal_conc": self.initial_metals,
-                                           "final_metal_conc": final_metal_conc,
+                             "chemical": {"initial_component_conc": self.initial_metals,
+                                           "final_component_conc": final_component_conc,
                                            # "conversion": (self.initial_copper - final_copper_conc) / self.initial_copper,
                                            "volume": self.chem_volume,
                                            "equation": "",

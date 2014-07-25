@@ -208,7 +208,7 @@ function($, _, Backbone, d3, TableView){
             d3.json(src, function(error, data){
               data.forEach(function(d){
                   d.x = + d.step / 60 ;
-                  d.metal = + d.cstr_data.components.Cu.metal_moles;
+                  d.metal = + d.cstr_data.components.Cu.component_moles;
                   d.rate_ferrous = + d.cstr_data.components.Cu.rate_ferrous;
                   d.ferrous_out = + d.flow_out.components.ferrous;
               });

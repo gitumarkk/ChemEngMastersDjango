@@ -123,11 +123,11 @@ def run_copper_reaction_rates():
     copper = reactions.MetalDissolutionRate(constants.COPPER, copper_conc, ferric_conc)
     data = []
     i = 0
-    while copper.ferric > 1e-9 and copper.metal_conc > 1e-9:
+    while copper.ferric > 1e-9 and copper.component_conc > 1e-9:
         temp = {}
-        # rate_ferrous, rate_ferric, copper_metal_conc  = copper.run()
+        # rate_ferrous, rate_ferric, copper_component_conc  = copper.run()
         output = copper.run()
-        temp = {"ferric": copper.ferric,  "step": i, "copper": output["metal_moles"], "cupric": output["ion_moles"]}
+        temp = {"ferric": copper.ferric,  "step": i, "copper": output["component_moles"], "cupric": output["ion_moles"]}
         temp.update(output)
         data.append(temp)
         i = i + 1
@@ -149,7 +149,7 @@ def run_bioxidation_raction_rates_simulation():
 
         if not ferric == 0: # Avoid division by zero error
             np.seterr(divide='ignore')
-            # rate_ferrous, rate_ferric, metal_conc = biox_reaction.run()
+            # rate_ferrous, rate_ferric, component_conc = biox_reaction.run()
             output = biox_reaction.run()
 
             ferric_ferrous = np.divide(ferric, ferrous)
@@ -173,13 +173,13 @@ def run_chemical_single_reactor():
                                                  system=constants.CONTINUOUS)
     cstr.create_components(metal_rate)
     i = 0
-    # metal_rate.ferric > 1e-9 and metal_rate.metal_conc > 1e-9
+    # metal_rate.ferric > 1e-9 and metal_rate.component_conc > 1e-9
     while True:
         temp = {}
 
         cstr_data = cstr.run()
-        # print metal_rate.ferric, metal_rate.metal_conc
-        if metal_rate.ferric < 1e-9 or metal_rate.metal_conc < 1e-9:
+        # print metal_rate.ferric, metal_rate.component_conc
+        if metal_rate.ferric < 1e-9 or metal_rate.component_conc < 1e-9:
             break
 
         temp = {"step": i}
@@ -219,10 +219,10 @@ def run_chemical_single_reactor():
 #         # temp = {}
 #         sys_data = sys.run()
 
-#         if copper_rate.metal_conc < 1e-9:
+#         if copper_rate.component_conc < 1e-9:
 #             break
 
-#         final_copper_conc = copper_rate.metal_conc
+#         final_copper_conc = copper_rate.component_conc
 
 #         sys_data[0].update({"step": i})
 #         sys_data[1].update({"step": i})

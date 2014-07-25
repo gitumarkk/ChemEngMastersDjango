@@ -57,7 +57,7 @@ class TestViews(TestCase):
     def test_system_with_tanks_in_series_copper_data(self):
         url = reverse("system_run", kwargs={"system_type": "tanks_in_series"})
 
-        response = self.client.get("%s?Cu=2" % url, follow=True)
+        response = self.client.get("%s?Cu=2&ferricFerrousRatio=1" % url, follow=True)
 
         response_json = json.loads(response.content)
         biox_0 = response_json["bioxidation"][0]

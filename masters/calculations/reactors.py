@@ -59,13 +59,13 @@ class CSTR(object):
 
         # previous rates
         for component in self.components:
-            # rate_ferrous, rate_ferric, metal_conc = component.run()
+            # rate_ferrous, rate_ferric, component_conc = component.run()
             output = component.run()
-            # rate_metal_conc]
+            # rate_component_conc]
             rate_ferrous = output.get("rate_ferrous", 0.)
             rate_ferric = output.get("rate_ferric", 0.)
-            rate_metal = output.get("rate_metal", 0.)
-            metal_moles = output.get("metal_moles", 0.)
+            rate_component = output.get("rate_component", 0.)
+            component_moles = output.get("component_moles", 0.)
             ion_moles = output.get("ion_moles", 0.)
 
             cummulative_rate_ferrous = cummulative_rate_ferrous + rate_ferrous
@@ -74,9 +74,9 @@ class CSTR(object):
             _cstr_data["components"][component.reactant_name] = {
                             "rate_ferrous": rate_ferrous,
                             "rate_ferric": rate_ferric,
-                            "metal_moles": metal_moles,
+                            "component_moles": component_moles,
                             "ion_moles": ion_moles,
-                            "rate_metal": rate_metal
+                            "rate_component": rate_component
                         }
 
         _cstr_data["total_rate_ferrous"] = cummulative_rate_ferrous
@@ -119,10 +119,10 @@ class CSTR(object):
 
         # If the system component is part of original reactor components work out rate else work out the flow rate
         if self.cstr_data["components"].get(key):
-            ion_conc = flow_diff + self.cstr_data["components"][key]["rate_metal"]
+            ion_conc = flow_diff + self.cstr_data["components"][key]["rate_component"]
         else:
             ion_conc = flow_diff
-        # ion_conc = flow_diff + self.cstr_data["components"][key]["rate_metal"]
+        # ion_conc = flow_diff + self.cstr_data["components"][key]["rate_component"]
         ion_name = key
 
         # If self.cstr_data["components"].get(key) == None: ion_conc=flow_dif

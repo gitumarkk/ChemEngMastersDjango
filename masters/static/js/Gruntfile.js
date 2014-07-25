@@ -50,7 +50,7 @@ module.exports = function(grunt) {
                 mainConfigFile: "app/app.js",
                 out: "app.min.js",
                 findNestedDependencies: true,
-                optimize: "uglify",
+                optimize: "none",
                 include: "app.js",
                 logLevel: 0,
                 inlineText: true

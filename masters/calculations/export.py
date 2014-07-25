@@ -23,7 +23,7 @@ class ExportToExcel(object):
             ws.cell('%s%s'%(col, _r)).value = k
             _r += 1
             for k_2, v_2 in v.iteritems():
-                if k_2 == 'initial_metal_conc' or k_2 == 'final_metal_conc':
+                if k_2 == 'initial_component_conc' or k_2 == 'final_component_conc':
                     c_3 = 1
                     ws.cell('%s%s'%("A", _r)).value = k_2
                     for k_3, v_3 in v_2.iteritems():

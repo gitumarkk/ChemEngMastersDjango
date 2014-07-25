@@ -202,15 +202,15 @@ define(["d3"], function(d3){
 
             },
 
-            append_metal: function(data, symbol, name){
+            append_component: function(data, symbol, name){
                 var self = this;
 
                 var metal = d3.svg.line()
                                     .x(function(d) { return self.x(d.step); })
-                                        .y(function(d) { return self.y(d.cstr_data.components[symbol].metal_moles); });
+                                        .y(function(d) { return self.y(d.cstr_data.components[symbol].component_moles); });
 
                 self.x.domain(d3.extent(data, function(d) { return d.step; }));
-                self.y.domain(d3.extent(data, function(d) { return d.cstr_data.components[symbol].metal_moles; }));
+                self.y.domain(d3.extent(data, function(d) { return d.cstr_data.components[symbol].component_moles; }));
 
                 self.svg.append("path")
                             .datum(data)
@@ -242,7 +242,7 @@ define(["d3"], function(d3){
 
             },
 
-            append_metal_ion: function(data, symbol, name){
+            append_component_ion: function(data, symbol, name){
                 var self = this;
                 // console.log(data);
                 var metal_ion = d3.svg.line()
