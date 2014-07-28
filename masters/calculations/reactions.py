@@ -84,9 +84,9 @@ class MetalDissolutionRate(object):
         if self.component_conc < 0:
             return 0
 
-        K = constants.RATE_DATA[self.reactant_name]["equation"]["k"] # s-1
-        alpha = constants.RATE_DATA[self.reactant_name]["equation"]["a"]
-        beta = constants.RATE_DATA[self.reactant_name]["equation"]["b"]
+        K = constants.DATA[self.reactant_name]["equation"]["k"] # s-1
+        alpha = constants.DATA[self.reactant_name]["equation"]["a"]
+        beta = constants.DATA[self.reactant_name]["equation"]["b"]
 
         if self.ferric == 0:
             # This is because np.power(self.ferric, beta) = 1 if self.ferric = 0 and beta = 0 i.e. 0^0 = 1

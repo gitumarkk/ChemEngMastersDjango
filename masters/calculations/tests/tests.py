@@ -6,6 +6,33 @@ from masters.calculations import system
 from masters.calculations import constants
 from masters.calculations import reactors
 from masters.calculations import reactions
+from masters.calculations import rates
+
+class TestRateData(TestCase):
+    def setUp(self):
+        self.IRON_MR = constants.DATA[constants.IRON]["Mr"]
+
+    def test_process_rate_data_moles_metal_reacted(self):
+        rate_obj = rates.ProcessRatesData(constants.COPPER)
+        moles_metal_left = rate_obj.moles_metal_left(2, -0.001)
+
+        self.assertEqual(moles_metal_left, (2/63.546 - 0.001/2))
+
+    def test_build_rates(self):
+        rate_obj = rates.ProcessRatesData(constants.COPPER)
+        output = rate_obj.run()
+
+        calc_1 = (output["data"][1][0]["Fe3+"]["abs"] * 100 / (1000 * 0.015)) / self.IRON_MR
+        self.assertEqual(output["data"][1][0]["Fe3+"]["moles"], calc_1)
+
+        calc_2 = (output["data"][1][0]["FeTot"]["abs"] * 100 / (1000 * 0.015)) / self.IRON_MR
+        self.assertEqual(output["data"][1][0]["FeTot"]["moles"], calc_2)
+
+        self.assertGreater(output["data"][1][4]["metal"]["ion"], output["data"][1][4]["metal"]["metal"])
+
+    def test_get_rate_constants(self):
+        rate_obj = rates.RateEquation(constants.COPPER)
+        output = rate_obj.run()
 
 class TestReactors(TestCase):
     def setUp(self):
