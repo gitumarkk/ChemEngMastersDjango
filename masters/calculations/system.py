@@ -30,7 +30,7 @@ class System(object):
 
     def convert_initial_metals_to_moles(self, initial_metals):
         for k, v in initial_metals.iteritems():
-            initial_metals[k] = v / constants.RATE_DATA[k]["Mr"]
+            initial_metals[k] = v / constants.DATA[k]["Mr"]
         return initial_metals
 
     def calculate_initial_ferric_conc(self):

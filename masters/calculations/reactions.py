@@ -105,7 +105,7 @@ class MetalDissolutionRate(object):
     def update_metal_reactant_concentration(self, rate_ferric):
         # Problem here is thar for a multi COMPONENT SYSTEM NEED TO UPDATE
         # CONCENTRATIONS FROM OUTSIDE THE SYSTEM
-        self.component_conc = self.component_conc + (rate_ferric / float(constants.RATE_DATA[self.reactant_name]["stoichiometry"]))
+        self.component_conc = self.component_conc + (rate_ferric / float(constants.DATA[self.reactant_name]["stoichiometry"]))
 
     def update_metal_ion_concentration(self):
         self.metal_ion = self.metal_initial - self.component_conc
@@ -129,7 +129,7 @@ class MetalDissolutionRate(object):
         """
         Assuming a stoichiometric ratio of r_Cu2+ = r_Fe2+ / n
         """
-        return rate_ferrous / float(constants.RATE_DATA[self.reactant_name]["stoichiometry"])
+        return rate_ferrous / float(constants.DATA[self.reactant_name]["stoichiometry"])
 
 
     def ferric_to_ferrous(self, rate_ferric):

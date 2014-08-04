@@ -1,0 +1,34 @@
+ <table>
+        <thead>
+            <tr>
+                <td>Time</td>
+                <td>Fe3+</td>
+                <td>FeTot</td>
+                <td>F3+/Fe2+</td>
+                <td>Delta Iron</td>
+                <td>Rate Init Min</td>
+                <td>Rate Init Sec</td>
+                <td>rate Delta Min</td>
+                <td>rate Delta Sec</td>
+                <td>Metal (0)</td>
+                <td>Metal (n+)</td>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each result }}
+                <tr>
+                    <td> {{ time }}</td>
+                    <td> {{ truncate_int ferric.moles 5 }} </td>
+                    <td> {{ truncate_int FeTot.moles 5 }} </td>
+                    <td> {{ truncate_int ferric_ferrous 3 }} </td>
+                    <td> {{ truncate_int delta_ferric 5 }} </td>
+                    <td> {{ truncate_int rate_init.min 5 }} </td>
+                    <td> {{ truncate_int rate_init.sec 7 }} </td>
+                    <td> {{ truncate_int rate_delta.min 5 }} </td>
+                    <td> {{ truncate_int rate_delta.sec 7}} </td>
+                    <td> {{ truncate_int metal.metal 5 }} </td>
+                    <td> {{truncate_int metal.ion 5 }} </td>
+                </tr>
+            {{/each}}
+        </tbody>
+</table>

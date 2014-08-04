@@ -3,8 +3,9 @@ define([
     'jquery',
     'backbone',
     "views/GraphView",
-    "views/LayoutView"
-], function ($, Backbone, GraphView, LayoutView) {
+    "views/LayoutView",
+    "views/RatesView"
+], function ($, Backbone, GraphView, LayoutView, RatesView) {
     'use strict';
 
     var AppRouter = Backbone.Router.extend({
@@ -23,11 +24,21 @@ define([
         reactionRates : function(action){
             if (self.current_view) {
                 self.current_view.close();
-                $("<div id='graph-container'></div>").appendTo("body");
+                if ($("#layout").length === 0) {
+                    $("<div id='layout'></div>").appendTo("body");
+                }
             }
-            var graph = new GraphView({"rate": action, src: "/reaction_rates/" + action + "/"});
-            graph.render();
-            self.current_view = graph;
+            // var graph = new GraphView({"rate": action, src: "/reaction_rates/" + action + "/"});
+            // graph.render();
+            // self.current_view = graph;
+
+            var rates_layout = new LayoutView({"type": "rates",
+                                                "action": action,
+                                                src: "/system_run/" + action + "/"});
+
+            // var rates = new RatesView({"rate": action, src: "/reaction_rates/" + action + "/"});
+            // rates.render();
+            self.current_view = rates_layout;
         },
         reactors: function(action){
             if (self.current_view) {
@@ -48,7 +59,7 @@ define([
 
             console.log(action);
             var layout = new LayoutView({"type": "system",
-                                        "system": action,
+                                        "action": action,
                                         src: "/system_run/" + action + "/"});
             self.current_view = layout;
         },

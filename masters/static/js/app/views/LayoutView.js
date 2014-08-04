@@ -10,9 +10,11 @@ define([
 "d3",
 "views/SystemView",
 "views/SummaryView",
-"text!tpl/layout.html"
+"views/RatesView",
+"text!tpl/layout.html",
+"text!tpl/layout_rates.html"
 ],
-function(Backbone, Handlebars, d3, SystemView, SummaryView, layoutTPL){
+function(Backbone, Handlebars, d3, SystemView, SummaryView, RatesView, layoutTPL, layoutRatesTpl){
     var LayoutView = Backbone.View.extend({
         menuTemplate: layoutTPL,
         el: "#layout",
@@ -23,6 +25,7 @@ function(Backbone, Handlebars, d3, SystemView, SummaryView, layoutTPL){
             "change #reactor_conditions": "updateExportData",
             "keyup #reactor_conditions": "updateExportData",
             "click #reactor_conditions [type='checkbox']": "toggleMetalInput",
+            "submit #rates_type": "ratesType",
 
         },  // Add menu here
         initialize: function(options){
@@ -34,19 +37,50 @@ function(Backbone, Handlebars, d3, SystemView, SummaryView, layoutTPL){
             self.current_views = [];
             _.bindAll(self, "assignViews");
             self.type = options.type;
-            self.system = options.system;
+            self.action = options.action;
             self.src = options.src;
-            self.menu_tpl = this.compileTemplate(this.menuTemplate);
+
+            if (options.type === "rates") {
+                self.menu_tpl = this.compileTemplate(layoutRatesTpl);
+            } else {
+                self.menu_tpl = this.compileTemplate(this.menuTemplate);
+            }
             self.render();
             // self.fetchDataWithD3();
         },
 
         render: function(){
-            var self = this;
-            self.$el.html(self.menu_tpl({system : self.system}));
+            var data, self = this;
+            if (self.type === "rates") {
+                data = {};
+            } else {
+                data = {system : self.action};
+            }
+            self.$el.html(self.menu_tpl(data));
             return self;
         },
 
+        ratesType: function(ev){
+            var self = this;
+            var params, _ratesType;
+
+            ev.preventDefault();
+            ev.stopPropagation();
+
+            self.$el.find("#rates_layout").remove();
+            self.$el.append('<div id="rates_layout" class="row"></div>');
+
+            _ratesType = $(ev.currentTarget);
+            if (_ratesType.find(".ferric_ferrous").prop("checked")) {
+                params = "?rates_type=ferric_ferrous";
+            }else{
+                params = "?rates_type=ferric";
+            }
+
+            var rates = new RatesView({"rate": self.action, src: "/reaction_rates/" + self.action + "/"+params});
+            rates.render();
+            return self;
+        },
         validateForm: function(ev){
             var self = this;
             var params, reactorConditions;
@@ -56,10 +90,6 @@ function(Backbone, Handlebars, d3, SystemView, SummaryView, layoutTPL){
 
             reactorConditions = $(ev.currentTarget).serializeObject();
             params =  $.param(reactorConditions);
-
-            // Update the export data urls
-            //
-
 
             this.fetchDataWithD3(self.src+"?"+params);
         },
@@ -78,7 +108,7 @@ function(Backbone, Handlebars, d3, SystemView, SummaryView, layoutTPL){
             var self = this;
             reactorConditions = $(ev.currentTarget).serializeObject();
             params =  $.param(reactorConditions);
-            self.$el.find("#export_data").prop("href", "/export_data/" + self.system + "/?" + params);
+            self.$el.find("#export_data").prop("href", "/export_data/" + self.action + "/?" + params);
         },
 
         toggleMetalInput: function(ev){

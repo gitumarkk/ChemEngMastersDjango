@@ -12,6 +12,8 @@ from masters.calculations import reactors
 from masters.calculations import reactions
 from masters.calculations import constants
 from masters.calculations import export
+from masters.calculations import rates
+
 
 # Third Party
 import numpy as np
@@ -42,17 +44,42 @@ def bioleach_reactor(request):
     return HttpResponse(json_data, content_type='application/json')
 
 
+# def reaction_rates(request, rate_type=None):
+#     data = []
+
+#     if rate_type == "bioxidation":
+#         data = run_bioxidation_raction_rates_simulation()
+#     elif rate_type == "chemical":
+#         data = run_copper_reaction_rates()
+
+#     json_data = dumps(data)
+#     return HttpResponse(json_data, content_type='application/json')
+
+
 def reaction_rates(request, rate_type=None):
     data = []
 
     if rate_type == "bioxidation":
         data = run_bioxidation_raction_rates_simulation()
     elif rate_type == "chemical":
-        data = run_copper_reaction_rates()
+        rates_type = request.GET.get('rates_type', "ferric")
+
+        copper = rates.RateEquation(constants.COPPER, rates_type=rates_type)
+        zinc = rates.RateEquation(constants.ZINC, rates_type=rates_type)
+        tin = rates.RateEquation(constants.TIN, rates_type=rates_type)
+
+        copper_data = copper.run()
+        zinc_data = zinc.run()
+        tin_data = tin.run()
+
+        data = {
+            constants.COPPER: copper_data,
+            constants.ZINC: zinc_data,
+            constants.TIN: tin_data
+        }
 
     json_data = dumps(data)
     return HttpResponse(json_data, content_type='application/json')
-
 
 def single_reactor(request, reactor_type=None):
     data = []
@@ -189,66 +216,3 @@ def run_chemical_single_reactor():
         i = i + 1
 
     return data
-
-# def tanks_in_series():
-#     data = []
-#     biox_volume = 1
-#     chem_volume = 1
-#     copper_conc = final_copper_conc = 2 / 63.5  # mol.m^-3
-#     # Initializing the system
-#     sys = system.System()
-
-#     # Setting up the biox reactor
-#     upstream = reactors.BaseUpStream()
-#     biox_rate = reactions.BioxidationRate()
-#     biox_cstr = sys.create_reactor(reactors.CSTR, biox_volume, upstream)
-#     biox_cstr.update_component_rate(biox_rate)
-
-#     # Setting up the Chemical Reactor
-#     copper_rate = reactions.MetalDissolutionRate(constants.COPPER,
-#                                                 copper_conc,
-#                                                 system=constants.CONTINUOUS)
-#     chem_cstr = sys.create_reactor(reactors.CSTR, chem_volume, biox_cstr)
-#     chem_cstr.update_component_rate(copper_rate)
-
-#     biox_list = []
-#     chem_list = []
-
-#     i = 0
-#     while True:
-#         # temp = {}
-#         sys_data = sys.run()
-
-#         if copper_rate.component_conc < 1e-9:
-#             break
-
-#         final_copper_conc = copper_rate.component_conc
-
-#         sys_data[0].update({"step": i})
-#         sys_data[1].update({"step": i})
-
-#         biox_list.append(sys_data[0])
-#         chem_list.append(sys_data[1])
-
-#         i = i + 1
-#     # print ""
-#     # print ""
-#     # print "BIOXIDATION VOLUME: " + str(biox_volume)
-#     # print "BIOXIDATION DILUTION RATE: " + str(biox_cstr.get_dilution_rate())
-#     # print "CHEMICAL VOLUME: " + str(chem_volume)
-#     # print "CHEMICAL RATE: " + str(chem_cstr.get_dilution_rate())
-#     # print "INITIAL FERRIC CONC"
-#     # print upstream.flow_out
-
-#     _data = {"bioxidation": biox_list,
-#              "chemical": chem_list,
-#              "summary": {"bioxidation": {"ferric_in": biox_cstr.flow_in["components"]["ferric"],
-#                                          "ferrous_in": biox_cstr.flow_in["components"]["ferrous"],
-#                                          "volume": biox_volume},
-#                          "chemical": {"initial_copper_conc": copper_conc,
-#                                        "final_copper_conc": final_copper_conc,
-#                                        "volume": chem_volume},
-#                         "combined": {"VChem_VBiox": chem_volume/biox_volume}
-#                         }
-#              }
-#     return _data

@@ -1,0 +1,26 @@
+ <table>
+        <thead>
+            <tr>
+                <td>Time</td>
+                <td>A</td>
+                <td>B</td>
+                <td>K 1</td>
+                <td>K 2</td>
+                <td>K 3</td>
+                <td>K average</td>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each result }}
+                <tr>
+                    <td> {{ time }}</td>
+                    <td> {{ truncate_int a 5 }} </td>
+                    <td> {{ truncate_int b 5 }} </td>
+                    <td> {{ parse_k k 1 5 }} </td>
+                    <td> {{ parse_k k 2 5 }} </td>
+                    <td> {{ parse_k k 3 5 }} </td>
+                    <td> {{ truncate_int k.average 5}} </td>
+                </tr>
+            {{/each}}
+        </tbody>
+</table>

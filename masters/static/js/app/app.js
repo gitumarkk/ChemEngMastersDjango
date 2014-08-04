@@ -71,6 +71,40 @@ require(['jquery', "backbone", "routers/router"], function($, Backbone, AppRoute
         }
     };
 
+    Backbone.View.prototype.getAjax = function(options){
+        $.ajax({
+            url: options.url,
+            type: "GET",
+            xhrFields: {
+                withCredentials: true
+            },
+            success: function(response) {
+                options.success(response, options);
+            },
+            error: function(response){
+                console.log(response);
+            }
+        });
+    };
+
+    Backbone.View.prototype.postAjax = function(options){
+        $.ajax({
+            url: options.url,
+            data: options.data,
+            type: "POST",
+            xhrFields: {
+                withCredentials: true
+            },
+            success: function(response) {
+                options.success(response, options);
+            },
+            error: function(response) {
+                options.error();
+                console.log(response);
+            }
+        });
+    };
+
     // SserializeObject for forms
 
     $.fn.serializeObject = function(){
