@@ -97,6 +97,7 @@ function(Backbone, Handlebars, d3, SystemView, SummaryView, RatesView, layoutTPL
         fetchDataWithD3: function(url){
             var self = this;
             self.emptyCurrentViews();
+            self.$el.append("<div class='layout'></div>");
             d3.json(url, function(error, data){
                 console.log("success fetching data");
                 console.log(error);

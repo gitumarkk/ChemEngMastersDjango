@@ -53,7 +53,6 @@ define([
                 metal_symbol = self.metals_symbols[item];
                 metal_data = data[self.metals_symbols[item]].data;
                 rates_constant = data[self.metals_symbols[item]].rates_constant;
-                console.log(rates_constant);
                 for (metal_i in metal_data) {
                     table_html = self.table_template({"result": metal_data[metal_i]});
                     self.$el.find("#"+metal_symbol+"-data").append(table_html);
