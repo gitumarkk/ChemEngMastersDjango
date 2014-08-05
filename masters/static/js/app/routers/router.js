@@ -24,6 +24,9 @@ define([
         reactionRates : function(action){
             if (self.current_view) {
                 self.current_view.close();
+                if ($("#layout").length === 0) {
+                    $("<div id='layout'></div>").appendTo("body");
+                }
             }
             // var graph = new GraphView({"rate": action, src: "/reaction_rates/" + action + "/"});
             // graph.render();
@@ -49,6 +52,9 @@ define([
         system: function(action){
             if (self.current_view) {
                 self.current_view.close();
+                if ($("#layout").length === 0) {
+                    $("<div id='layout'></div>").appendTo("body");
+                }
             }
 
             console.log(action);
