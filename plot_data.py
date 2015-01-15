@@ -30,7 +30,6 @@ def handle(*args, **kwargs):
     #     i += 1
 
 
-    import ipdb; ipdb.set_trace()
     plt.plot(ferric_biox[1]["time"], ferric_biox[1]["ferric"])
     plt.show()
 handle()
