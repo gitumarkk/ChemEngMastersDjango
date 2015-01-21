@@ -39,6 +39,7 @@ class CSTR(object):
         self.components = [] # Array holding the components in the reactor
         self.cstr_data = {}
         self.ions = {}
+        self.step = 0
 
     def create_components(self, component):
         """
@@ -103,13 +104,10 @@ class CSTR(object):
         """
 
         if self.flow_in["components"].get(key) == None:
-            # print "self.flow_in[components].get(key) == NONE", key
             self.flow_in["components"][key] = 0.0
 
         # if 0: evaluates to false
-        # print self.flow_out["components"], self.flow_out["components"].get(key), key
         if self.flow_out["components"].get(key) == None:
-            # print "self.flow_out[components].get(key) == NONE", key
             self.flow_out["components"][key] = 0.0
 
         # ERROR IS THAT IT ONLY CALCULATES THE CONCENTRATION OF THE CSTR KEY HENCE IF
@@ -184,13 +182,16 @@ class CSTR(object):
         """
         # _comp = {"ferric": self.ferric, "ferrous": self.ferrous, "Cu": self.ions["Cu"], "Bacteria": self.ions["Bacteria"]}
         # _comp = self.ions
-        # print self.ions["ferric"] - self.ferric, self.ions["ferrous"] - self.ferrous
         self.flow_out = {"flowrate": self.flow_in["flowrate"],
                         "components": self.ions}
 
     def update_ferric_concentrations_in_components(self):
         for component in self.components:
             component.update_global_reactant_concentrations(self.ferric, self.ferrous)
+
+    def update_step_count_in_component(self):
+        for component in self.components:
+            component.step = self.step
 
     def update_flow_in(self):
         """
@@ -220,6 +221,9 @@ class CSTR(object):
 
         # 4) For each component in the reactors update the global ferric concentrations
         self.update_ferric_concentrations_in_components()
+
+        # Let components know which run it is
+        self.update_step_count_in_component()
 
         # 5) Update the flow out stream from the CSTR
         self.update_flow_out_stream()

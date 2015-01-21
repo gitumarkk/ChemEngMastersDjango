@@ -10,185 +10,208 @@ from masters.calculations import system
 # Third party
 import matplotlib.pyplot as plt
 
+CU = 10
+FERRIC_FERROUS = 1000
+CHEM = 1
+BIOX = 1
+IRON = 9
 
 class Command(BaseCommand):
-    # help = "Which simulation do you want to run, --volume, --initial_mass, --ferric_ferrous"
+    args = "volume"
+    help = "Which simulation do you want to run: usage is --simulate volume or --simulate metal or --simulate ferric_ratio"
     # option_list = BaseCommand.option_list + (
     #     make_option('--total', dest='total', type='str', default="--volume",
     #                     help='How many families to create'),)
 
-    def handle(self, *args, **kwargs):
-        # self.volume_sensitivity_analysis()
-        self.metal_sensitivity_analysis()
+    option_list = BaseCommand.option_list + (
+                    make_option('-s',
+                                '--simulate',
+                                dest='simulate',
+                                default="volume",
+                                type="str",
+                                help=help),)
 
-    def _volume_sensitivity_analysis(self):
-        volumes = [(1, "1 L"),(10, "10 L"), (1000, "1000 L")]
+    def handle(self, *args, **kwargs):
+        if kwargs["simulate"] == "volume":
+            self.simulate = "volume"
+            self.volume_sensitivity_analysis()
+
+        elif kwargs["simulate"] == "metal":
+            self.simulate = "initial_metal"
+            self.metal_sensitivity_analysis()
+
+        elif kwargs["simulate"] == "ferric_ratio":
+            self.simulate = "ferric_ratio"
+            self.ferric_ferrous_sensitivity_analysis()
+
+        elif kwargs["simulate"] == "mixed_metals":
+            self.simulate = "mixed_metals"
+
+        elif kwargs["simulate"] == "experiments":
+            self.simulate = "experiments"
+            self.experimental_sensitivity_analysis()
+
+
+    def experimental_sensitivity_analysis(self):
+        analysis_list = [(1, "1 L")]
         output = {}
 
-        for row in volumes.iteritems():
-            sys = system.System(row[0], 1, 1000, 9, initial_metals={"Cu": 20})
+        for row in analysis_list:
+            BIOX = row[0]
+            sys = system.System(BIOX, CHEM, FERRIC_FERROUS, IRON, initial_metals={"Cu": CU})
             sys.build_cyclic_tanks()
             output[row[1]] = sys.run()
 
-        self.plot_sensitivity_analysis(output, volumes)
+        self.plot_sensitivity_analysis(output, analysis_list)
 
-    def metal_sensitivity_analysis(self):
-        analysis_list = [(2, "2 g Cu"),(10, "10 g Cu"), (20, "20 g Cu"), (20, "20 g Cu at 10 L Biooxidation Volume")]
+    def volume_sensitivity_analysis(self):
+        analysis_list = [(1, "1 L"),(10, "10 L"), (1000, "1000 L")]
         output = {}
 
-        import ipdb; ipdb.set_trace()
-        for k, v in analysis_list.iteritems():
-            sys = system.System(1, 1, 1000, 9, initial_metals={"Cu": k})
+        for row in analysis_list:
+            BIOX = row[0]
+            sys = system.System(BIOX, CHEM, FERRIC_FERROUS, IRON, initial_metals={"Cu": CU})
             sys.build_cyclic_tanks()
-            output[v] = sys.run()
+            output[row[1]] = sys.run()
+
+        self.plot_sensitivity_analysis(output, analysis_list)
+
+
+    # def metal_sensitivity_analysis(self):
+    #     analysis_list = [(2, "2 g Cu"),(10, "10 g Cu"), (20, "20 g Cu")]
+    #     default = {"biox": 1, "chem": 1, "ferric_ferrous": 1000}
+    #     _analysis_list = [{"Cu": 2, "label": "2 g Cu"},
+    #                          {"Cu": 10, "label": "10 g Cu"},
+    #                          {"Cu": 20, "label": "20 g Cu"},
+    #                          {"Cu": 20, "label": "20 g Cu at 10 L Biooxidation Volume"}]
+
+    #     for item in _analysis_list:
+    #         item.update(default)
+    #     item[len(item) - 1]["biox"] = 10
+    #     self.run_sensitivity_analysis(analysis_list)
+
+    def metal_sensitivity_analysis(self):
+        analysis_list = [(2, "2 g Cu"),(10, "10 g Cu"), (20, "20 g Cu")]
+        # default = {"biox": 1, "chem": 1, "ferric_ferrous": 1000}
+        # ____analysis_list = [{"Cu": 2, "label": "2 g Cu"},(10, "10 g Cu"), (20, "20 g Cu")]
+
+        output = {}
+        for row in analysis_list:
+            CU = row[0]
+            sys = system.System(BIOX, CHEM, FERRIC_FERROUS, IRON, initial_metals={"Cu": CU})
+            sys.build_cyclic_tanks()
+            output[row[1]] = sys.run()
+
+        sys = system.System(10, 1, FERRIC_FERROUS, IRON, initial_metals={"Cu": 20})
+        sys.build_cyclic_tanks()
+        output["20 g Cu at 10 L Biooxidation Volume"] = sys.run()
+
+        analysis_list.append((20, "20 g Cu at 10 L Biooxidation Volume"))
+        self.plot_sensitivity_analysis(output, analysis_list)
+
+    def ferric_ferrous_sensitivity_analysis(self):
+        analysis_list = [(1000, "1000"),(10, "10"), (1, "0.1")]
+        # default = {"biox": 1, "chem": 1, "ferric_ferrous": 1000}
+        # ____analysis_list = [{"Cu": 2, "label": "2 g Cu"},(10, "10 g Cu"), (20, "20 g Cu")]
+
+        output = {}
+
+        for row in analysis_list:
+            FERRIC_FERROUS = row[0]
+            sys = system.System(BIOX, CHEM, FERRIC_FERROUS, IRON, initial_metals={"Cu": CU})
+            sys.build_cyclic_tanks()
+            output[row[1]] = sys.run()
 
         sys = system.System(10, 1, 1000, 9, initial_metals={"Cu": 20})
         sys.build_cyclic_tanks()
-        output[v] = sys.run()
-
-        analysis_list.append((20, "20 g Cu at 10 L Biooxidation Volume"))
         self.plot_sensitivity_analysis(output, analysis_list)
 
     def plot_sensitivity_analysis(self, sys_data, analysis_list):
         ferric_biox = {}
         ferric_chem = {}
-        cupric_chem = {}
+        metals_chem = {}
 
         for k, data in sys_data.iteritems():
-            ferric_biox[k] = {"ferric": [], "time": []}
+            ferric_biox[k] = {"ferric": [], "time": [], "biomass": []}
             for row in data["bioxidation"]:
                 ferric_biox[k]["ferric"].append(row["ions"]["ferric"])
                 ferric_biox[k]["time"].append(row["step"])
+                ferric_biox[k]["biomass"].append(row["cstr_data"]["components"]["Biomass"]["component_moles"])
 
             ferric_chem[k] = {"ferric": [], "time": []}
             for row in data["chemical"]:
                 ferric_chem[k]["ferric"].append(row["ions"]["ferric"])
                 ferric_chem[k]["time"].append(row["step"])
 
-            cupric_chem[k] = {"cupric": [], "time": []}
+            metals_chem[k] = {"Cu2+": [], "time": [], "Zn2+": [], "Sn2+": []}
             for row in data["chemical"]:
-                cupric_chem[k]["cupric"].append(row["ions"]["Cu"])
-                cupric_chem[k]["time"].append(row["step"])
+                metals_chem[k]["Cu2+"].append(row["ions"]["Cu"])
+                metals_chem[k]["time"].append(row["step"])
 
-        # i = 0
-        # for volume, ferric_data in ferric_biox.iteritems():
-        #     plt.figure(i)
-        #     plt.plot(ferric_data["time"], ferric_data["ferric"])
-        #     i += 1
+                if hasattr(self, "mixed_metals"):
+                    metals_chem[k]["Zn2+"].append(row["ions"]["Zn"])
+                    metals_chem[k]["Sn2+"].append(row["ions"]["Sn"])
 
-        fig = plt.figure(1)
-        fig.suptitle("ferric ion concentration in biooxidation reactor")
-        ax = fig.add_subplot(111)
+        line_choice = ["k", "b--", "r-.", "g:"]
 
-        ax.set_xlabel("Time (min)")
-        ax.set_ylabel("Ferric ion concentration (mol/l)")
+        fig = plt.figure(1, figsize=(8, 8))
+        # fig.suptitle("Ferric ion Concentration in Biooxidation Reactor")
+        fig_subplot = fig.add_subplot(111)
+        fig_subplot.set_xlabel("Time (min)")
+        fig_subplot.set_ylabel("Ferric ion concentration (mol/l)")
+        fig_subplot.set_ylim(0, 0.18)
+        fig_subplot.grid('on')
 
-        ax.plot(ferric_biox[analysis_list[0][1]]["time"], ferric_biox[analysis_list[0][1]]["ferric"], label=analysis_list[0][1])
-        ax.plot(ferric_biox[analysis_list[1][1]]["time"], ferric_biox[analysis_list[1][1]]["ferric"], 'r--', label=analysis_list[1][1])
-        ax.plot(ferric_biox[analysis_list[2][1]]["time"], ferric_biox[analysis_list[2][1]]["ferric"], label=analysis_list[2][1])
-        plt.legend()
+        for i, item in enumerate(analysis_list):
+            line, = fig_subplot.plot(ferric_biox[item[1]]["time"], ferric_biox[item[1]]["ferric"], line_choice[i], label=item[1])
+            line.set_linewidth(2)
+        plt.legend(ncol=2, mode="expand", loc=3, borderaxespad=0., bbox_to_anchor=(0., 1.02, 1., .102))
+        fig.savefig('simulation_figures/'+self.simulate+'/ferric_ion_concentration_biooxidation_reactor.png',
+                bbox_inches='tight')
 
+        fig = plt.figure(2, figsize=(8, 8))
+        # fig.suptitle("Ferric ion Concentration in Biooxidation Reactor")
+        fig_subplot = fig.add_subplot(111)
+        fig_subplot.set_xlabel("Time (min)")
+        fig_subplot.set_ylabel("Biomass concentration (mol/l)")
+        # fig_subplot.set_ylim(0, 0.18)
+        fig_subplot.grid('on')
 
-        # fig = plt.figure(2)
-        # fig.suptitle("ferric ion concentration in Metal dissolution reactor")
-        # ax = fig.add_subplot(111)
+        line_choice = ["k", "g--", "r-.", "b:"]
+        for i, item in enumerate(analysis_list):
+            line, = fig_subplot.plot(ferric_biox[item[1]]["time"], ferric_biox[item[1]]["biomass"], line_choice[i], label=item[1])
+            line.set_linewidth(2)
+        plt.legend(ncol=2, mode="expand", loc=3, borderaxespad=0., bbox_to_anchor=(0., 1.02, 1., .102))
+        fig.savefig('simulation_figures/'+self.simulate+'/biomass_concentration_biooxidation_reactor.png',
+                bbox_inches='tight')
 
-        # ax.set_xlabel("Time (min)")
-        # ax.set_ylabel("Ferric ion concentration (mol/l)")
+        fig = plt.figure(3, figsize=(8, 8))
+        # fig.suptitle("Ferric ion concentration in Metal dissolution reactor")
+        fig_subplot = fig.add_subplot(111)
+        fig_subplot.set_xlabel("Time (min)")
+        fig_subplot.set_ylabel("Ferric ion concentration (mol/l)")
+        fig_subplot.set_ylim(0, 0.18)
+        fig_subplot.grid('on')
 
-        # ax.plot(ferric_chem[1]["time"], ferric_chem[volumes[0]]["ferric"], label="1 L")
-        # ax.plot(ferric_chem[10]["time"], ferric_chem[volumes[1]]["ferric"], 'r--', label="10 L")
-        # ax.plot(ferric_chem[1000]["time"], ferric_chem[volumes[2]]["ferric"], label="1000 L")
+        for i, item in enumerate(analysis_list):
+            line, = fig_subplot.plot(ferric_chem[item[1]]["time"], ferric_chem[item[1]]["ferric"], line_choice[i], label=item[1])
+            line.set_linewidth(2)
+        plt.legend(ncol=2, mode="expand", loc=3, borderaxespad=0., bbox_to_anchor=(0., 1.02, 1., .102))
+        fig.savefig('simulation_figures/'+self.simulate+'/ferric_ion_concentration_chemical_reactor.png',
+                    bbox_inches='tight')
 
-        # plt.legend()
+        fig = plt.figure(4, figsize=(8, 8))
+        # fig.suptitle("Cupric Ion Concentration in Metal Dissolution Reactor")
+        fig_subplot = fig.add_subplot(111)
+        fig_subplot.set_xlabel("Time (min)")
+        fig_subplot.set_ylabel("Cupric ion concentration (mol/l)")
+        fig_subplot.grid('on')
 
+        for i, item in enumerate(analysis_list):
+            line, = fig_subplot.plot(metals_chem[item[1]]["time"], metals_chem[item[1]]["Cu2+"], line_choice[i], label=item[1])
+            line.set_linewidth(2)
+        plt.legend(ncol=2, mode="expand", loc='lower left', borderaxespad=0., bbox_to_anchor=(0., 1.02, 1., .102))
+        fig.savefig('simulation_figures/'+self.simulate+'/cupric_ion_concentration_chemical_reactor.png',
+                    bbox_inches='tight')
 
-        # fig = plt.figure(3)
-        # fig.suptitle("cupric ion concentration in Metal dissolution reactor")
-        # ax = fig.add_subplot(111)
-
-        # ax.set_xlabel("Time (min)")
-        # ax.set_ylabel("Cupric ion concentration (mol/l)")
-
-        # ax.plot(cupric_chem[1]["time"], cupric_chem[volumes[0]]["cupric"], label="1 L")
-        # ax.plot(cupric_chem[10]["time"], cupric_chem[volumes[1]]["cupric"], 'r--', label="10 L")
-        # ax.plot(cupric_chem[1000]["time"], cupric_chem[volumes[2]]["cupric"], label="1000 L")
-
-        plt.legend()
-        plt.show()
-
-    def volume_sensitivity_analysis(self):
-        volumes = [1, 10, 1000]
-        output = {}
-        ferric_biox = {}
-        ferric_chem = {}
-        cupric_chem = {}
-
-
-        for volume in volumes:
-            sys = system.System(volume, 1, 1000, 9, initial_metals={"Cu": 20})
-            sys.build_cyclic_tanks()
-            output[volume] = sys.run()
-
-        for k, data in output.iteritems():
-            ferric_biox[k] = {"ferric": [], "time": []}
-            for row in data["bioxidation"]:
-                ferric_biox[k]["ferric"].append(row["ions"]["ferric"])
-                ferric_biox[k]["time"].append(row["step"])
-
-            ferric_chem[k] = {"ferric": [], "time": []}
-            for row in data["chemical"]:
-                ferric_chem[k]["ferric"].append(row["ions"]["ferric"])
-                ferric_chem[k]["time"].append(row["step"])
-
-            cupric_chem[k] = {"cupric": [], "time": []}
-            for row in data["chemical"]:
-                cupric_chem[k]["cupric"].append(row["ions"]["Cu"])
-                cupric_chem[k]["time"].append(row["step"])
-
-        i = 0
-        # for volume, ferric_data in ferric_biox.iteritems():
-        #     plt.figure(i)
-        #     plt.plot(ferric_data["time"], ferric_data["ferric"])
-        #     i += 1
-
-        fig = plt.figure(1)
-        fig.suptitle("ferric ion concentration in biooxidation reactor")
-        ax = fig.add_subplot(111)
-
-        ax.set_xlabel("Time (min)")
-        ax.set_ylabel("Ferric ion concentration (mol/l)")
-
-        ax.plot(ferric_biox[1]["time"], ferric_biox[volumes[0]]["ferric"], label="1 L")
-        ax.plot(ferric_biox[10]["time"], ferric_biox[volumes[1]]["ferric"], 'r--', label="10 L")
-        ax.plot(ferric_biox[1000]["time"], ferric_biox[volumes[2]]["ferric"], label="1000 L")
-        plt.legend()
-
-
-        fig = plt.figure(2)
-        fig.suptitle("ferric ion concentration in Metal dissolution reactor")
-        ax = fig.add_subplot(111)
-
-        ax.set_xlabel("Time (min)")
-        ax.set_ylabel("Ferric ion concentration (mol/l)")
-
-        ax.plot(ferric_chem[1]["time"], ferric_chem[volumes[0]]["ferric"], label="1 L")
-        ax.plot(ferric_chem[10]["time"], ferric_chem[volumes[1]]["ferric"], 'r--', label="10 L")
-        ax.plot(ferric_chem[1000]["time"], ferric_chem[volumes[2]]["ferric"], label="1000 L")
-
-        plt.legend()
-
-
-        fig = plt.figure(3)
-        fig.suptitle("cupric ion concentration in Metal dissolution reactor")
-        ax = fig.add_subplot(111)
-
-        ax.set_xlabel("Time (min)")
-        ax.set_ylabel("Cupric ion concentration (mol/l)")
-
-        ax.plot(cupric_chem[1]["time"], cupric_chem[volumes[0]]["cupric"], label="1 L")
-        ax.plot(cupric_chem[10]["time"], cupric_chem[volumes[1]]["cupric"], 'r--', label="10 L")
-        ax.plot(cupric_chem[1000]["time"], cupric_chem[volumes[2]]["cupric"], label="1000 L")
-
-        plt.legend()
         plt.show()

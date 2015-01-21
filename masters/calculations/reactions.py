@@ -78,28 +78,43 @@ class MetalDissolutionRate(object):
         self.ferric = initial_ferric or 0.
         self.system = system or constants.BATCH
         self.metal_ion = 0
+        self.ferric_last = 0
+        self.step = 0
 
     def metal_powder_rate(self):
         # Return 0 rate when the initial metal decreases to negative
         if self.component_conc < 0:
             return 0
 
-        K = constants.DATA[self.reactant_name]["equation"]["k"] # s-1
-        alpha = constants.DATA[self.reactant_name]["equation"]["a"]
-        beta = constants.DATA[self.reactant_name]["equation"]["b"]
+        # K = constants.DATA[self.reactant_name]["equation"]["k"] # s-1
+        # alpha = constants.DATA[self.reactant_name]["equation"]["a"]
+        # beta = constants.DATA[self.reactant_name]["equation"]["b"]
 
         if self.ferric == 0:
             # This is because np.power(self.ferric, beta) = 1 if self.ferric = 0 and beta = 0 i.e. 0^0 = 1
             # Occurs in the case of Zinc
             rate_ferric = 0
         else:
-            rate_ferric = K * np.power(self.component_conc, alpha) * np.power(self.ferric, beta)
+            # rate_ferric = K * np.power(self.component_conc, alpha) * np.power(self.ferric, beta)
+            # rate_ferric = K * np.power(self.ferric/self.ferrous, alpha)
+            rate_ferric = self.calculate_based_on_conversion()
         # try:
         # except:
         #     import ipdb; ipdb.set_trace()
 
         self.update_metal_reactant_concentration(rate_ferric)
         self.update_metal_ion_concentration()
+        return rate_ferric
+
+    def calculate_based_on_conversion(self):
+        K = constants.DATA[self.reactant_name]["equation"]["K"]
+        n = constants.DATA[self.reactant_name]["equation"]["n"]
+        X = 1 - (1 - K*np.power(self.ferric, n) * (self.step + 1))**3
+
+        rate_ferric = - 2*(X * self.metal_initial - self.metal_ion)/(self.step+1)
+        # print rate_ferric
+        # import ipdb; ipdb.set_trace()
+        # print rate_ferric
         return rate_ferric
 
     def update_metal_reactant_concentration(self, rate_ferric):
