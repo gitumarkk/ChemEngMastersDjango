@@ -10,7 +10,8 @@ IRON = "Fe"
 DATA = {
     COPPER: {
         "Mr": 63.546,
-        "equation": {"k": -0.0042, "a": 0.5, "b": 0.64},
+        # "equation": {"k": -0.0042, "a": 0.5, "b": 0.64},
+        "equation": {"n": 0.56, "K": 0.2615748/60},
         "stoichiometry": 2,
     },
 
