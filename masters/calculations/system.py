@@ -148,6 +148,10 @@ class System(object):
         # print total_initial_conc, total_current_conc
         return total_current_conc < ((1 - self.FINAL_CONVERSION) * total_initial_conc)
 
+    def update_step_in_units(self, step):
+        for unit in self.units:
+            unit.step = step
+
     def run(self):
         biox_list = []
         chem_list = []
@@ -158,6 +162,7 @@ class System(object):
         i = 0
         while True:
             # temp = {}
+            self.update_step_in_units(i)
             sys_data = self.step()
 
             # Should be sum of the metal concentrations
@@ -203,5 +208,4 @@ class System(object):
                             "data": summary_list
                             }
                 }
-        print self.img
         return _data
