@@ -24,7 +24,6 @@ class BioxidationRate(object):
 
     def update_biomass_concentration(self):
         self.component_conc
-        Ks = 0.001  # Total Thumbsuck
         k_d = 0
         # u_max = self.ferrous / (Ks + self.ferrous)
         u_max = (0.13 / 3600.0)
@@ -32,10 +31,8 @@ class BioxidationRate(object):
         self.component_conc = self.component_conc + (1 * rate_biomass)
 
     def simplified_hansford(self):
-        temp_C_x_q_spec_growth_rate = 1.2e-5 # (mol.m^-3.s^-1)
         q_spec_growth_rate = 0.00654157
 
-        # K = 5e-3  # Thanos
         K = 0.0024 # Tunde
         if self.ferrous == 0:
             rate_ferrous = 0.
@@ -86,10 +83,6 @@ class MetalDissolutionRate(object):
         if self.component_conc < 0:
             return 0
 
-        # K = constants.DATA[self.reactant_name]["equation"]["k"] # s-1
-        # alpha = constants.DATA[self.reactant_name]["equation"]["a"]
-        # beta = constants.DATA[self.reactant_name]["equation"]["b"]
-
         if self.ferric == 0:
             # This is because np.power(self.ferric, beta) = 1 if self.ferric = 0 and beta = 0 i.e. 0^0 = 1
             # Occurs in the case of Zinc
@@ -98,23 +91,29 @@ class MetalDissolutionRate(object):
             # rate_ferric = K * np.power(self.component_conc, alpha) * np.power(self.ferric, beta)
             # rate_ferric = K * np.power(self.ferric/self.ferrous, alpha)
             rate_ferric = self.calculate_based_on_conversion()
-        # try:
-        # except:
-        #     import ipdb; ipdb.set_trace()
+            # rate_ferric = self.shrinking_core_model()
 
         self.update_metal_reactant_concentration(rate_ferric)
         self.update_metal_ion_concentration()
         return rate_ferric
+
+    def shrinking_core_model(self):
+        K = constants.DATA[self.reactant_name]["equation"]["K"]
+        n = constants.DATA[self.reactant_name]["equation"]["n"]
+
+        conc = np.power(self.ferric, n)
+
+        a =  3 * K * conc
+        b = - 6 * np.power(K, 2) * np.power(conc, 2) * self.step
+        c =  3 * np.power(K, 3) * np.power(conc, 3) * np.power(self.step, 2)
+        return - (a + b + c) * self.metal_initial
 
     def calculate_based_on_conversion(self):
         K = constants.DATA[self.reactant_name]["equation"]["K"]
         n = constants.DATA[self.reactant_name]["equation"]["n"]
         X = 1 - (1 - K*np.power(self.ferric, n) * (self.step + 1))**3
 
-        rate_ferric = - 2*(X * self.metal_initial - self.metal_ion)/(self.step+1)
-        # print rate_ferric
-        # import ipdb; ipdb.set_trace()
-        # print rate_ferric
+        rate_ferric = - 2 * (X * self.metal_initial - self.metal_ion)/(self.step+1)
         return rate_ferric
 
     def update_metal_reactant_concentration(self, rate_ferric):

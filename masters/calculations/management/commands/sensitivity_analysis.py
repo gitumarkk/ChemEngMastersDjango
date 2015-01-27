@@ -10,7 +10,7 @@ from masters.calculations import system
 # Third party
 import matplotlib.pyplot as plt
 
-CU = 10
+CU = 20
 FERRIC_FERROUS = 1000
 CHEM = 1
 BIOX = 1
@@ -65,7 +65,12 @@ class Command(BaseCommand):
         self.plot_sensitivity_analysis(output, analysis_list)
 
     def volume_sensitivity_analysis(self):
-        analysis_list = [(1, "1 L"),(10, "10 L"), (1000, "1000 L")]
+        analysis_list = [(1, "1 L"),
+                         (3, "3 L"),
+                         (6, "6 L"),
+                         (9, "9 L"),
+                         (12, "12 L"),
+                         (1000, "1000 L")]
         output = {}
 
         for row in analysis_list:
@@ -91,7 +96,11 @@ class Command(BaseCommand):
     #     self.run_sensitivity_analysis(analysis_list)
 
     def metal_sensitivity_analysis(self):
-        analysis_list = [(2, "2 g Cu"),(10, "10 g Cu"), (20, "20 g Cu")]
+        analysis_list = [(2, "2 g Cu"),
+                         (5, "5 g Cu"),
+                         (10, "10 g Cu"),
+                         (15, "15 g Cu"),
+                         (20, "20 g Cu")]
         # default = {"biox": 1, "chem": 1, "ferric_ferrous": 1000}
         # ____analysis_list = [{"Cu": 2, "label": "2 g Cu"},(10, "10 g Cu"), (20, "20 g Cu")]
 
@@ -110,7 +119,10 @@ class Command(BaseCommand):
         self.plot_sensitivity_analysis(output, analysis_list)
 
     def ferric_ferrous_sensitivity_analysis(self):
-        analysis_list = [(1000, "1000"),(10, "10"), (1, "0.1")]
+        analysis_list = [(1000, "1000"),
+                         (10, "10"),
+                         (1, "1"),
+                         (0.1, "0.1")]
         # default = {"biox": 1, "chem": 1, "ferric_ferrous": 1000}
         # ____analysis_list = [{"Cu": 2, "label": "2 g Cu"},(10, "10 g Cu"), (20, "20 g Cu")]
 
@@ -152,7 +164,7 @@ class Command(BaseCommand):
                     metals_chem[k]["Zn2+"].append(row["ions"]["Zn"])
                     metals_chem[k]["Sn2+"].append(row["ions"]["Sn"])
 
-        line_choice = ["k", "b--", "r-.", "g:"]
+        # line_choice = ["k", "b--", "r-.", "g:"]
 
         fig = plt.figure(1, figsize=(8, 8))
         # fig.suptitle("Ferric ion Concentration in Biooxidation Reactor")
@@ -163,7 +175,7 @@ class Command(BaseCommand):
         fig_subplot.grid('on')
 
         for i, item in enumerate(analysis_list):
-            line, = fig_subplot.plot(ferric_biox[item[1]]["time"], ferric_biox[item[1]]["ferric"], line_choice[i], label=item[1])
+            line, = fig_subplot.plot(ferric_biox[item[1]]["time"], ferric_biox[item[1]]["ferric"], label=item[1])
             line.set_linewidth(2)
         plt.legend(ncol=2, mode="expand", loc=3, borderaxespad=0., bbox_to_anchor=(0., 1.02, 1., .102))
         fig.savefig('simulation_figures/'+self.simulate+'/ferric_ion_concentration_biooxidation_reactor.png',
@@ -177,9 +189,8 @@ class Command(BaseCommand):
         # fig_subplot.set_ylim(0, 0.18)
         fig_subplot.grid('on')
 
-        line_choice = ["k", "g--", "r-.", "b:"]
         for i, item in enumerate(analysis_list):
-            line, = fig_subplot.plot(ferric_biox[item[1]]["time"], ferric_biox[item[1]]["biomass"], line_choice[i], label=item[1])
+            line, = fig_subplot.plot(ferric_biox[item[1]]["time"], ferric_biox[item[1]]["biomass"], label=item[1])
             line.set_linewidth(2)
         plt.legend(ncol=2, mode="expand", loc=3, borderaxespad=0., bbox_to_anchor=(0., 1.02, 1., .102))
         fig.savefig('simulation_figures/'+self.simulate+'/biomass_concentration_biooxidation_reactor.png',
@@ -194,7 +205,7 @@ class Command(BaseCommand):
         fig_subplot.grid('on')
 
         for i, item in enumerate(analysis_list):
-            line, = fig_subplot.plot(ferric_chem[item[1]]["time"], ferric_chem[item[1]]["ferric"], line_choice[i], label=item[1])
+            line, = fig_subplot.plot(ferric_chem[item[1]]["time"], ferric_chem[item[1]]["ferric"], label=item[1])
             line.set_linewidth(2)
         plt.legend(ncol=2, mode="expand", loc=3, borderaxespad=0., bbox_to_anchor=(0., 1.02, 1., .102))
         fig.savefig('simulation_figures/'+self.simulate+'/ferric_ion_concentration_chemical_reactor.png',
@@ -208,7 +219,7 @@ class Command(BaseCommand):
         fig_subplot.grid('on')
 
         for i, item in enumerate(analysis_list):
-            line, = fig_subplot.plot(metals_chem[item[1]]["time"], metals_chem[item[1]]["Cu2+"], line_choice[i], label=item[1])
+            line, = fig_subplot.plot(metals_chem[item[1]]["time"], metals_chem[item[1]]["Cu2+"], label=item[1])
             line.set_linewidth(2)
         plt.legend(ncol=2, mode="expand", loc='lower left', borderaxespad=0., bbox_to_anchor=(0., 1.02, 1., .102))
         fig.savefig('simulation_figures/'+self.simulate+'/cupric_ion_concentration_chemical_reactor.png',

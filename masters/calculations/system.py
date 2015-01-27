@@ -26,7 +26,7 @@ class System(object):
         self.system_type = None
         self.system_components = [] # List of all the ions in the system
         self.MAX_TIME = 10 # seconds
-        self.FINAL_CONVERSION = 0.99
+        self.FINAL_CONVERSION = 0.95
 
     def convert_initial_metals_to_moles(self, initial_metals):
         for k, v in initial_metals.iteritems():
@@ -139,7 +139,7 @@ class System(object):
     def convert_to_minutes(self, i):
         return i / 60.0
 
-    def check_conversion_above_threshohold(self):
+    def check_conversion_above_threshhold(self):
         """
         Checks if the cummulative conversion is over the specified threshold
         """
@@ -167,7 +167,7 @@ class System(object):
 
             # Should be sum of the metal concentrations
             # If sum(self.metals_rate) < sum(self.initial_rates)
-            if self.check_conversion_above_threshohold():
+            if self.check_conversion_above_threshhold():
                 status = {"success": True, "message": "Simulation completed succesfully"}
                 break
 
