@@ -113,9 +113,9 @@ class Command(BaseCommand):
 
         sys = system.System(10, 1, FERRIC_FERROUS, IRON, initial_metals={"Cu": 20})
         sys.build_cyclic_tanks()
-        output["20 g Cu at 10 L Biooxidation Volume"] = sys.run()
+        output["20 g Cu at 10 L Bioox. Vol"] = sys.run()
 
-        analysis_list.append((20, "20 g Cu at 10 L Biooxidation Volume"))
+        analysis_list.append((20, "20 g Cu at 10 L Bioox. Vol"))
         self.plot_sensitivity_analysis(output, analysis_list)
 
     def ferric_ferrous_sensitivity_analysis(self):
@@ -178,7 +178,7 @@ class Command(BaseCommand):
             line, = fig_subplot.plot(ferric_biox[item[1]]["time"], ferric_biox[item[1]]["ferric"], label=item[1])
             line.set_linewidth(2)
         # plt.legend(ncol=2, mode="expand", loc=3, borderaxespad=0., bbox_to_anchor=(0., 1.02, 1., .102))
-        plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        plt.legend(loc='center left', bbox_to_anchor=(1, 0.5), prop={"size": 6})
         fig.savefig('simulation_figures/'+self.simulate+'/ferric_ion_concentration_biooxidation_reactor.png',
                 bbox_inches='tight')
 
