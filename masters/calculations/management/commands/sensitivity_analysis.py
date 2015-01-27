@@ -177,7 +177,8 @@ class Command(BaseCommand):
         for i, item in enumerate(analysis_list):
             line, = fig_subplot.plot(ferric_biox[item[1]]["time"], ferric_biox[item[1]]["ferric"], label=item[1])
             line.set_linewidth(2)
-        plt.legend(ncol=2, mode="expand", loc=3, borderaxespad=0., bbox_to_anchor=(0., 1.02, 1., .102))
+        # plt.legend(ncol=2, mode="expand", loc=3, borderaxespad=0., bbox_to_anchor=(0., 1.02, 1., .102))
+        plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
         fig.savefig('simulation_figures/'+self.simulate+'/ferric_ion_concentration_biooxidation_reactor.png',
                 bbox_inches='tight')
 
@@ -192,7 +193,8 @@ class Command(BaseCommand):
         for i, item in enumerate(analysis_list):
             line, = fig_subplot.plot(ferric_biox[item[1]]["time"], ferric_biox[item[1]]["biomass"], label=item[1])
             line.set_linewidth(2)
-        plt.legend(ncol=2, mode="expand", loc=3, borderaxespad=0., bbox_to_anchor=(0., 1.02, 1., .102))
+        # plt.legend(ncol=2, mode="expand", loc=3, borderaxespad=0., bbox_to_anchor=(0., 1.02, 1., .102))
+        plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
         fig.savefig('simulation_figures/'+self.simulate+'/biomass_concentration_biooxidation_reactor.png',
                 bbox_inches='tight')
 
@@ -207,7 +209,8 @@ class Command(BaseCommand):
         for i, item in enumerate(analysis_list):
             line, = fig_subplot.plot(ferric_chem[item[1]]["time"], ferric_chem[item[1]]["ferric"], label=item[1])
             line.set_linewidth(2)
-        plt.legend(ncol=2, mode="expand", loc=3, borderaxespad=0., bbox_to_anchor=(0., 1.02, 1., .102))
+        # plt.legend(ncol=2, mode="expand", loc=3, borderaxespad=0., bbox_to_anchor=(0., 1.02, 1., .102))
+        plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
         fig.savefig('simulation_figures/'+self.simulate+'/ferric_ion_concentration_chemical_reactor.png',
                     bbox_inches='tight')
 
@@ -221,7 +224,8 @@ class Command(BaseCommand):
         for i, item in enumerate(analysis_list):
             line, = fig_subplot.plot(metals_chem[item[1]]["time"], metals_chem[item[1]]["Cu2+"], label=item[1])
             line.set_linewidth(2)
-        plt.legend(ncol=2, mode="expand", loc='lower left', borderaxespad=0., bbox_to_anchor=(0., 1.02, 1., .102))
+        # plt.legend(ncol=2, mode="expand", loc='lower left', borderaxespad=0., bbox_to_anchor=(0., 1.02, 1., .102))
+        plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
         fig.savefig('simulation_figures/'+self.simulate+'/cupric_ion_concentration_chemical_reactor.png',
                     bbox_inches='tight')
 
