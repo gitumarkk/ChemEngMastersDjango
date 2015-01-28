@@ -11,19 +11,21 @@ DATA = {
     COPPER: {
         "Mr": 63.546,
         # "equation": {"k": -0.0042, "a": 0.5, "b": 0.64},
-        "equation": {"n": 0.56, "K": 0.2615748/60},
+        "equation": {"n": 0.56, "K": 0.00436},
         "stoichiometry": 2,
     },
 
     TIN: {
         "Mr": 118.71,
-        "equation": {"k": -0.0026, "a": 0.15, "b": 1.312},
+        # "equation": {"k": -0.0026, "a": 0.15, "b": 1.312},
+        "equation": {"n": 0.269, "K": 0.000593},
         "stoichiometry": 4,
     },
     # ZINC: {"Mr": 65.38, "equation": {"k": -0.0161, "a": 1.116, "b": -0.005}}
     ZINC: {
         "Mr": 65.38,
-        "equation": {"k": -0.0161, "a": 1.116, "b": 0},
+        # "equation": {"k": -0.0161, "a": 1.116, "b": 0},
+        "equation": {"n": 0, "K": 0.00751},
         "stoichiometry": 2
     },
     IRON: {

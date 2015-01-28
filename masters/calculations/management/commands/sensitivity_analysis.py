@@ -46,6 +46,7 @@ class Command(BaseCommand):
 
         elif kwargs["simulate"] == "mixed_metals":
             self.simulate = "mixed_metals"
+            self.mixed_metals_sensitivity_analysis()
 
         elif kwargs["simulate"] == "experiments":
             self.simulate = "experiments"
@@ -118,6 +119,22 @@ class Command(BaseCommand):
         analysis_list.append((20, "20 g Cu at 10 L Bioox. Vol"))
         self.plot_sensitivity_analysis(output, analysis_list)
 
+    def mixed_metals_sensitivity_analysis(self):
+        analysis_list = [(0, "Mixed Metal")]
+        ZN = SN = CU = 2
+
+        output = {}
+        sys = system.System(BIOX, CHEM, FERRIC_FERROUS, IRON, initial_metals={"Cu": CU, "Sn": SN, "Zn": ZN})
+        sys.build_cyclic_tanks()
+        output["Mixed Metal"] = sys.run()
+
+        # sys = system.System(10, 1, FERRIC_FERROUS, IRON, initial_metals={"Cu": 20})
+        # sys.build_cyclic_tanks()
+        # output["20 g Cu at 10 L Bioox. Vol"] = sys.run()
+
+        # analysis_list.append((20, "20 g Cu at 10 L Bioox. Vol"))
+        self.plot_sensitivity_analysis(output, analysis_list)
+
     def ferric_ferrous_sensitivity_analysis(self):
         analysis_list = [(1000, "1000"),
                          (10, "10"),
@@ -163,7 +180,7 @@ class Command(BaseCommand):
                 metals_chem[k]["Cu2+"].append(row["ions"]["Cu"])
                 metals_chem[k]["time"].append(row["step"])
 
-                if hasattr(self, "mixed_metals"):
+                if self.simulate == "mixed_metals":
                     metals_chem[k]["Zn2+"].append(row["ions"]["Zn"])
                     metals_chem[k]["Sn2+"].append(row["ions"]["Sn"])
 
@@ -177,11 +194,12 @@ class Command(BaseCommand):
         fig_subplot.set_ylim(0, 0.18)
         fig_subplot.grid('on')
 
+
         for i, item in enumerate(analysis_list):
             line, = fig_subplot.plot(ferric_biox[item[1]]["time"], ferric_biox[item[1]]["ferric"], label=item[1])
             line.set_linewidth(2)
         # plt.legend(ncol=2, mode="expand", loc=3, borderaxespad=0., bbox_to_anchor=(0., 1.02, 1., .102))
-        plt.legend(loc='center left', bbox_to_anchor=(1, 0.5), prop={"size": 6})
+        plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
         fig.savefig('simulation_figures/'+self.simulate+'/ferric_ion_concentration_biooxidation_reactor.png',
                 bbox_inches='tight')
 
@@ -221,12 +239,21 @@ class Command(BaseCommand):
         # fig.suptitle("Cupric Ion Concentration in Metal Dissolution Reactor")
         fig_subplot = fig.add_subplot(111)
         fig_subplot.set_xlabel("Time (min)")
-        fig_subplot.set_ylabel("Cupric ion concentration (mol/l)")
+        fig_subplot.set_ylabel("Metal ion concentration (mol/l)")
         fig_subplot.grid('on')
 
         for i, item in enumerate(analysis_list):
-            line, = fig_subplot.plot(metals_chem[item[1]]["time"], metals_chem[item[1]]["Cu2+"], label=item[1])
+            line, = fig_subplot.plot(metals_chem[item[1]]["time"], metals_chem[item[1]]["Cu2+"], label="Copper")
             line.set_linewidth(2)
+
+            if self.simulate == "mixed_metals":
+                line, = fig_subplot.plot(metals_chem[item[1]]["time"], metals_chem[item[1]]["Zn2+"], label="Zinc")
+                line.set_linewidth(2)
+
+                line, = fig_subplot.plot(metals_chem[item[1]]["time"], metals_chem[item[1]]["Sn2+"], label="Tin")
+                line.set_linewidth(2)
+
+
         # plt.legend(ncol=2, mode="expand", loc='lower left', borderaxespad=0., bbox_to_anchor=(0., 1.02, 1., .102))
         plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
         fig.savefig('simulation_figures/'+self.simulate+'/cupric_ion_concentration_chemical_reactor.png',

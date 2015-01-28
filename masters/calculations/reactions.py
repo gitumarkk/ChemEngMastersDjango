@@ -100,7 +100,6 @@ class MetalDissolutionRate(object):
     def shrinking_core_model(self):
         K = constants.DATA[self.reactant_name]["equation"]["K"]
         n = constants.DATA[self.reactant_name]["equation"]["n"]
-
         conc = np.power(self.ferric, n)
 
         a =  3 * K * conc
@@ -111,7 +110,13 @@ class MetalDissolutionRate(object):
     def calculate_based_on_conversion(self):
         K = constants.DATA[self.reactant_name]["equation"]["K"]
         n = constants.DATA[self.reactant_name]["equation"]["n"]
-        X = 1 - (1 - K*np.power(self.ferric, n) * (self.step + 1))**3
+
+        if self.reactant_name == "Zn":
+            X = 1 - np.exp(- np.power(K * (self.step + 1), 0.5))
+        else:
+            X = 1 - (1 - K*np.power(self.ferric, n) * (self.step + 1))**3
+        if X > 1:
+            X = 1.
 
         rate_ferric = - 2 * (X * self.metal_initial - self.metal_ion)/(self.step+1)
         return rate_ferric
