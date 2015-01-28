@@ -134,8 +134,11 @@ class Command(BaseCommand):
             sys.build_cyclic_tanks()
             output[row[1]] = sys.run()
 
-        sys = system.System(10, 1, 1000, 9, initial_metals={"Cu": 20})
+        sys = system.System(10, 1, 0.1, 9, initial_metals={"Cu": CU})
         sys.build_cyclic_tanks()
+        output["0.1 at 10 L Bioox. Vol"] = sys.run()
+
+        analysis_list.append((20, "0.1 at 10 L Bioox. Vol"))
         self.plot_sensitivity_analysis(output, analysis_list)
 
     def plot_sensitivity_analysis(self, sys_data, analysis_list):
