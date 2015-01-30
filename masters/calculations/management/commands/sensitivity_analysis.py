@@ -122,6 +122,7 @@ class Command(BaseCommand):
     def mixed_metals_sensitivity_analysis(self):
         analysis_list = [(0, "Mixed Metal")]
         ZN = SN = CU = 2
+        BIOX = 10
 
         output = {}
         sys = system.System(BIOX, CHEM, FERRIC_FERROUS, IRON, initial_metals={"Cu": CU, "Sn": SN, "Zn": ZN})
@@ -243,7 +244,8 @@ class Command(BaseCommand):
         fig_subplot.grid('on')
 
         for i, item in enumerate(analysis_list):
-            line, = fig_subplot.plot(metals_chem[item[1]]["time"], metals_chem[item[1]]["Cu2+"], label="Copper")
+            label = item[1] if self.simulate != "mixed_metals" else "Copper"
+            line, = fig_subplot.plot(metals_chem[item[1]]["time"], metals_chem[item[1]]["Cu2+"], label=label)
             line.set_linewidth(2)
 
             if self.simulate == "mixed_metals":

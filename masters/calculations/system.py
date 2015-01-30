@@ -26,7 +26,7 @@ class System(object):
         self.system_type = None
         self.system_components = [] # List of all the ions in the system
         self.MAX_TIME = 10 # seconds
-        self.FINAL_CONVERSION = 0.95
+        self.FINAL_CONVERSION = 0.99
 
     def convert_initial_metals_to_moles(self, initial_metals):
         for k, v in initial_metals.iteritems():
