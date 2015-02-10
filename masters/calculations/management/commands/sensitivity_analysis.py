@@ -194,7 +194,7 @@ class Command(BaseCommand):
         fig_subplot.set_xlabel("Time (min)")
         fig_subplot.set_ylabel("Ferric ion concentration (mol/l)")
         fig_subplot.set_ylim(0, 0.18)
-        fig_subplot.set_title("[Fe3+] in Bioox Reactor")
+        fig_subplot.set_title("[Fe3+] in Bioox Reactor (A)")
         fig_subplot.grid('on')
 
 
@@ -211,7 +211,7 @@ class Command(BaseCommand):
         fig_subplot = fig.add_subplot(222)
         fig_subplot.set_xlabel("Time (min)")
         fig_subplot.set_ylabel("Metal ion concentration (mol/l)")
-        fig_subplot.set_title("[Cu2+] in Bioox Reactor")
+        fig_subplot.set_title("[Cu2+] in Bioox Reactor (B)")
         # fig_subplot.set_ylim(0, 0.18)
         fig_subplot.grid('on')
 
@@ -239,7 +239,7 @@ class Command(BaseCommand):
         fig_subplot.set_xlabel("Time (min)")
         fig_subplot.set_ylabel("Ferric ion concentration (mol/l)")
         fig_subplot.set_ylim(0, 0.18)
-        fig_subplot.set_title("[Fe3+] in Chem reactor")
+        fig_subplot.set_title("[Fe3+] in Chem reactor (C)")
         fig_subplot.grid('on')
 
         for i, item in enumerate(analysis_list):
@@ -255,7 +255,7 @@ class Command(BaseCommand):
         fig_subplot = fig.add_subplot(224)
         fig_subplot.set_xlabel("Time (min)")
         fig_subplot.set_ylabel("Metal ion concentration (mol/l)")
-        fig_subplot.set_title("[Cu2+] in Chem Reactor")
+        fig_subplot.set_title("[Cu2+] in Chem Reactor (D)")
         fig_subplot.grid('on')
 
         for i, item in enumerate(analysis_list):
