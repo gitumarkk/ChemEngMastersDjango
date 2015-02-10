@@ -115,8 +115,8 @@ class MetalDissolutionRate(object):
             X = 1 - np.exp(- np.power(K * (self.step + 1), 0.5))
         else:
             X = 1 - (1 - K*np.power(self.ferric, n) * (self.step + 1))**3
-        if X > 1:
-            X = 1.
+        # if X > 1:
+        #     X = 1.
 
         rate_ferric = - 2 * (X * self.metal_initial - self.metal_ion)/(self.step+1)
         return rate_ferric
