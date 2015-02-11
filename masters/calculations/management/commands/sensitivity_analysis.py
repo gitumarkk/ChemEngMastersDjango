@@ -206,12 +206,29 @@ class Command(BaseCommand):
         # fig.savefig('simulation_figures/'+self.simulate+'/ferric_ion_concentration_biooxidation_reactor.png',
         #         bbox_inches='tight')
 
-        # fig = plt.figure(2, figsize=(8, 8))
-        # fig.suptitle("Ferric ion Concentration in Biooxidation Reactor")
+
         fig_subplot = fig.add_subplot(222)
         fig_subplot.set_xlabel("Time (min)")
+        fig_subplot.set_ylabel("Ferric ion concentration (mol/l)")
+        fig_subplot.set_ylim(0, 0.18)
+        fig_subplot.set_title("[Fe3+] in Chem reactor (B)")
+        fig_subplot.grid('on')
+
+        for i, item in enumerate(analysis_list):
+            line, = fig_subplot.plot(ferric_chem[item[1]]["time"], ferric_chem[item[1]]["ferric"], label=item[1])
+            line.set_linewidth(2)
+        # plt.legend(ncol=2, mode="expand", loc=3, borderaxespad=0., bbox_to_anchor=(0., 1.02, 1., .102))
+        # plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        # fig.savefig('simulation_figures/'+self.simulate+'/ferric_ion_concentration_chemical_reactor.png',
+        #             bbox_inches='tight')
+
+
+        # fig = plt.figure(2, figsize=(8, 8))
+        # fig.suptitle("Ferric ion Concentration in Biooxidation Reactor")
+        fig_subplot = fig.add_subplot(223)
+        fig_subplot.set_xlabel("Time (min)")
         fig_subplot.set_ylabel("Metal ion concentration (mol/l)")
-        fig_subplot.set_title("[Cu2+] in Bioox Reactor (B)")
+        fig_subplot.set_title("[Cu2+] in Bioox Reactor (C)")
         # fig_subplot.set_ylim(0, 0.18)
         fig_subplot.grid('on')
 
@@ -235,20 +252,7 @@ class Command(BaseCommand):
 
         # fig = plt.figure(3, figsize=(8, 8))
         # fig.suptitle("Ferric ion concentration in Metal dissolution reactor")
-        fig_subplot = fig.add_subplot(223)
-        fig_subplot.set_xlabel("Time (min)")
-        fig_subplot.set_ylabel("Ferric ion concentration (mol/l)")
-        fig_subplot.set_ylim(0, 0.18)
-        fig_subplot.set_title("[Fe3+] in Chem reactor (C)")
-        fig_subplot.grid('on')
 
-        for i, item in enumerate(analysis_list):
-            line, = fig_subplot.plot(ferric_chem[item[1]]["time"], ferric_chem[item[1]]["ferric"], label=item[1])
-            line.set_linewidth(2)
-        # plt.legend(ncol=2, mode="expand", loc=3, borderaxespad=0., bbox_to_anchor=(0., 1.02, 1., .102))
-        # plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-        # fig.savefig('simulation_figures/'+self.simulate+'/ferric_ion_concentration_chemical_reactor.png',
-        #             bbox_inches='tight')
 
         # fig = plt.figure(4, figsize=(8, 8))
         # fig.suptitle("Cupric Ion Concentration in Metal Dissolution Reactor")
