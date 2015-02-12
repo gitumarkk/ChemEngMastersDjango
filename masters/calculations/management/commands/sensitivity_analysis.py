@@ -305,7 +305,7 @@ class Command(BaseCommand):
         fig_subplot = fig.add_subplot(326)
         fig_subplot.set_xlabel("Time (min)")
         fig_subplot.set_ylabel("[Copper] (mol/l)")
-        fig_subplot.set_title("[Copper Metal] in Chem Reactor")
+        fig_subplot.set_title("[Copper] in Chem Reactor [F]")
         # fig_subplot.set_ylim(0, 0.18)
         fig_subplot.grid('on')
 
