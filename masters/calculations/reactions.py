@@ -10,11 +10,12 @@ class BioxidationRate(object):
     """
     The initial rate assumes a CSTR
     """
-    def __init__(self, ferric_initial=None, ferrous_initial=None):
+    def __init__(self, ferric_initial=None, ferrous_initial=None, initial_cells=7.25e7):
         self.ferric = ferric_initial or 0.
         self.ferrous = ferrous_initial or 0.
         self.reactant_name = "Biomass"
-        self.component_conc = 0.00183439  # Assuming an initial biomass concentration
+        # self.component_conc = 0.00183439  # Assuming an initial biomass concentration
+        self.component_conc = initial_cells * 4.8 * 10e-15 * 1000
 
     def __unicode__(self):
         return u"BIOX"
@@ -22,16 +23,25 @@ class BioxidationRate(object):
     def inhibited(self):
         pass
 
+    def calculate_biomass_conc(self):
+        return self.cell_number * 4.8 * 10e-15 * 1000
+
     def update_biomass_concentration(self):
         self.component_conc
         k_d = 0
+        K = 0.0024 # Tunde
+
         # u_max = self.ferrous / (Ks + self.ferrous)
         u_max = (0.13 / 3600.0)
-        rate_biomass = self.component_conc * (u_max  - k_d)
-        self.component_conc = self.component_conc + (1 * rate_biomass)
+
+        if self.ferrous == 0:
+            rate_biomass = 0.0
+        else:
+            rate_biomass = self.component_conc * (u_max  - k_d) / (1 + (K * np.divide(self.ferric, self.ferrous)))
+        self.component_conc = self.component_conc + (1.0 * rate_biomass)
 
     def simplified_hansford(self):
-        q_spec_growth_rate = 0.00654157
+        q_spec_growth_rate = 23.55 / 3600
 
         K = 0.0024 # Tunde
         if self.ferrous == 0:

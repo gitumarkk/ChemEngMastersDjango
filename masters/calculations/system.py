@@ -9,10 +9,11 @@ from masters.calculations import constants
 
 
 class System(object):
-    def __init__(self, biox_volume, chem_volume, ferric_ferrous, total_iron, initial_metals={}):
+    def __init__(self, biox_volume, chem_volume, ferric_ferrous, total_iron, initial_metals={}, initial_cells=7.25e7):
         self.units = []
         self.biox_volume = biox_volume or 1.0
         self.chem_volume = chem_volume or 1.0
+        self.initial_cells = initial_cells
         # self.initial_copper = (initial_copper or 2) / 63.5  # Need to divide by Volume / self.chem_volume
         self.ferric_ferrous = ferric_ferrous or 1000.0
         self.total_iron = (9.0 or total_iron) # Converting to g/m^3
@@ -68,7 +69,7 @@ class System(object):
         self.upstream = reactors.BaseUpStream(ferric=self.ferric,
                                               ferrous=self.ferrous,
                                               ratio=self.ferric_ferrous)
-        self.biox_rate = reactions.BioxidationRate()
+        self.biox_rate = reactions.BioxidationRate(initial_cells=self.initial_cells)
         self.biox_cstr = self.create_reactor(reactors.CSTR, self.biox_volume, self.upstream)
         self.biox_cstr.create_components(self.biox_rate)
 
@@ -98,7 +99,7 @@ class System(object):
                                          ratio=self.ferric_ferrous)
 
         # Building the Bioxidation Reactor
-        self.biox_rate = reactions.BioxidationRate()
+        self.biox_rate = reactions.BioxidationRate(initial_cells=self.initial_cells)
         self.biox_cstr = self.create_reactor(reactors.CSTR, self.biox_volume, upstream)
         self.biox_cstr.create_components(self.biox_rate)
         self.system_components.append(self.biox_rate.reactant_name)

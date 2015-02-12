@@ -48,6 +48,10 @@ class Command(BaseCommand):
             self.simulate = "mixed_metals"
             self.mixed_metals_sensitivity_analysis()
 
+        elif kwargs["simulate"] == "cells":
+            self.simulate = "cells"
+            self.microorganism_sensitivity_analysis()
+
         elif kwargs["simulate"] == "experiments":
             self.simulate = "experiments"
             self.experimental_sensitivity_analysis()
@@ -159,6 +163,28 @@ class Command(BaseCommand):
         analysis_list.append((20, "0.1 (10 L Bioox)"))
         self.plot_sensitivity_analysis(output, analysis_list)
 
+    def microorganism_sensitivity_analysis(self):
+        analysis_list = [(1e4, "1e4"),
+                         (1e5, "1e5"),
+                         (1e6, "1e6"),
+                         (1e7, "1e7"),
+                         (1e8, "1e8"),
+                         (1e9, "1e9")]
+        # default = {"biox": 1, "chem": 1, "ferric_ferrous": 1000}
+        # ____analysis_list = [{"Cu": 2, "label": "2 g Cu"},(10, "10 g Cu"), (20, "20 g Cu")]
+
+        output = {}
+        CU = 20
+        for row in analysis_list:
+            BIOMASS = row[0]
+            sys = system.System(BIOX, CHEM, FERRIC_FERROUS, IRON, initial_metals={"Cu": CU}, initial_cells=BIOMASS)
+            sys.build_cyclic_tanks()
+            output[row[1]] = sys.run()
+
+        sys = system.System(10, 1, 0.1, 9, initial_metals={"Cu": CU})
+        sys.build_cyclic_tanks()
+        self.plot_sensitivity_analysis(output, analysis_list)
+
     def plot_sensitivity_analysis(self, sys_data, analysis_list):
         ferric_biox = {}
         ferric_chem = {}
@@ -177,8 +203,9 @@ class Command(BaseCommand):
                 ferric_chem[k]["ferric"].append(row["ions"]["ferric"])
                 ferric_chem[k]["time"].append(row["step"])
 
-            metals_chem[k] = {"Cu2+": [], "time": [], "Zn2+": [], "Sn2+": []}
+            metals_chem[k] = {"Cu2+": [], "time": [], "Zn2+": [], "Sn2+": [], "copper": []}
             for row in data["chemical"]:
+                metals_chem[k]["copper"].append(row["cstr_data"]["components"]["Cu"]["component_moles"])
                 metals_chem[k]["Cu2+"].append(row["ions"]["Cu"])
                 metals_chem[k]["time"].append(row["step"])
 
@@ -190,9 +217,9 @@ class Command(BaseCommand):
 
         fig = plt.figure(1, figsize=(8, 8))
         # fig.suptitle("Ferric ion Concentration in Biooxidation Reactor")
-        fig_subplot = fig.add_subplot(221)
+        fig_subplot = fig.add_subplot(321)
         fig_subplot.set_xlabel("Time (min)")
-        fig_subplot.set_ylabel("Ferric ion concentration (mol/l)")
+        fig_subplot.set_ylabel("[Fe3+] (mol/l)")
         fig_subplot.set_ylim(0, 0.18)
         fig_subplot.set_title("[Fe3+] in Bioox Reactor (A)")
         fig_subplot.grid('on')
@@ -207,9 +234,9 @@ class Command(BaseCommand):
         #         bbox_inches='tight')
 
 
-        fig_subplot = fig.add_subplot(222)
+        fig_subplot = fig.add_subplot(322)
         fig_subplot.set_xlabel("Time (min)")
-        fig_subplot.set_ylabel("Ferric ion concentration (mol/l)")
+        fig_subplot.set_ylabel("[Fe3+] (mol/l)")
         fig_subplot.set_ylim(0, 0.18)
         fig_subplot.set_title("[Fe3+] in Chem reactor (B)")
         fig_subplot.grid('on')
@@ -225,9 +252,9 @@ class Command(BaseCommand):
 
         # fig = plt.figure(2, figsize=(8, 8))
         # fig.suptitle("Ferric ion Concentration in Biooxidation Reactor")
-        fig_subplot = fig.add_subplot(223)
+        fig_subplot = fig.add_subplot(323)
         fig_subplot.set_xlabel("Time (min)")
-        fig_subplot.set_ylabel("Metal ion concentration (mol/l)")
+        fig_subplot.set_ylabel("[Cu2+] (mol/l)")
         fig_subplot.set_title("[Cu2+] in Bioox Reactor (C)")
         # fig_subplot.set_ylim(0, 0.18)
         fig_subplot.grid('on')
@@ -236,19 +263,7 @@ class Command(BaseCommand):
             line, = fig_subplot.plot(ferric_biox[item[1]]["time"], ferric_biox[item[1]]["Cu2+"], label=item[1])
             line.set_linewidth(2)
 
-        # fig_subplot.set_xlabel("Time (min)")
-        # fig_subplot.set_ylabel("Biomass concentration (mol/l)")
-        # fig_subplot.set_title("Biomass concentration in Bioox Reactor")
-        # # fig_subplot.set_ylim(0, 0.18)
-        # fig_subplot.grid('on')
 
-        # for i, item in enumerate(analysis_list):
-        #     line, = fig_subplot.plot(ferric_biox[item[1]]["time"], ferric_biox[item[1]]["biomass"], label=item[1])
-        #     line.set_linewidth(2)
-        # plt.legend(ncol=2, mode="expand", loc=3, borderaxespad=0., bbox_to_anchor=(0., 1.02, 1., .102))
-        # plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-        # fig.savefig('simulation_figures/'+self.simulate+'/biomass_concentration_biooxidation_reactor.png',
-        #         bbox_inches='tight')
 
         # fig = plt.figure(3, figsize=(8, 8))
         # fig.suptitle("Ferric ion concentration in Metal dissolution reactor")
@@ -256,9 +271,9 @@ class Command(BaseCommand):
 
         # fig = plt.figure(4, figsize=(8, 8))
         # fig.suptitle("Cupric Ion Concentration in Metal Dissolution Reactor")
-        fig_subplot = fig.add_subplot(224)
+        fig_subplot = fig.add_subplot(324)
         fig_subplot.set_xlabel("Time (min)")
-        fig_subplot.set_ylabel("Metal ion concentration (mol/l)")
+        fig_subplot.set_ylabel("[Cu2+] (mol/l)")
         fig_subplot.set_title("[Cu2+] in Chem Reactor (D)")
         fig_subplot.grid('on')
 
@@ -273,6 +288,30 @@ class Command(BaseCommand):
 
                 line, = fig_subplot.plot(metals_chem[item[1]]["time"], metals_chem[item[1]]["Sn2+"], label="Tin")
                 line.set_linewidth(2)
+
+
+        fig_subplot = fig.add_subplot(325)
+        fig_subplot.set_xlabel("Time (min)")
+        fig_subplot.set_ylabel("[Biomass] (mol/l)")
+        fig_subplot.set_title("[Biomass] in Bioox Reactor (E)")
+        # fig_subplot.set_ylim(0, 0.18)
+        fig_subplot.grid('on')
+
+        for i, item in enumerate(analysis_list):
+            line, = fig_subplot.plot(ferric_biox[item[1]]["time"], ferric_biox[item[1]]["biomass"], label=item[1])
+            line.set_linewidth(2)
+
+
+        fig_subplot = fig.add_subplot(326)
+        fig_subplot.set_xlabel("Time (min)")
+        fig_subplot.set_ylabel("[Copper] (mol/l)")
+        fig_subplot.set_title("[Copper Metal] in Chem Reactor")
+        # fig_subplot.set_ylim(0, 0.18)
+        fig_subplot.grid('on')
+
+        for i, item in enumerate(analysis_list):
+            line, = fig_subplot.plot(metals_chem[item[1]]["time"], metals_chem[item[1]]["copper"], label=item[1])
+            line.set_linewidth(2)
 
 
         plt.legend(ncol=3, mode="expand", borderaxespad=0., bbox_to_anchor=(-1.2, -0.3, 1.*2, .102))
