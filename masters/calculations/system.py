@@ -9,7 +9,7 @@ from masters.calculations import constants
 
 
 class System(object):
-    def __init__(self, biox_volume, chem_volume, ferric_ferrous, total_iron, initial_metals={}, initial_cells=7.25e7):
+    def __init__(self, biox_volume, chem_volume, ferric_ferrous, total_iron, initial_metals={}, initial_cells=7.25e7, additions=False):
         self.units = []
         self.biox_volume = biox_volume or 1.0
         self.chem_volume = chem_volume or 1.0
@@ -26,8 +26,14 @@ class System(object):
         self.img = None
         self.system_type = None
         self.system_components = [] # List of all the ions in the system
-        self.MAX_TIME = 10 # seconds
+
         self.FINAL_CONVERSION = 0.95
+
+        # Addition
+        self.additions = additions
+        self.additions_index = 1
+
+        self.MAX_TIME = 30 if self.additions else 10 # seconds
 
     def convert_initial_metals_to_moles(self, initial_metals):
         for k, v in initial_metals.iteritems():
@@ -153,6 +159,16 @@ class System(object):
         for unit in self.units:
             unit.step = step
 
+    def additions_update(self):
+        self.chem_cstr.components[0].component_conc = 20.0 / 63.55
+        self.initial_metals["Cu"] = 20.0 / 63.55
+        self.chem_cstr.components[0].metal_ion = 0.0
+        self.chem_cstr.components[0].reaction_step = 0
+        self.additions_index += 1
+
+    def check_ferrous_ion_above_threshold(self):
+        return self.biox_cstr.ions["ferric"] >= self.ferric
+
     def run(self):
         biox_list = []
         chem_list = []
@@ -168,9 +184,19 @@ class System(object):
 
             # Should be sum of the metal concentrations
             # If sum(self.metals_rate) < sum(self.initial_rates)
-            if self.check_conversion_above_threshhold():
-                status = {"success": True, "message": "Simulation completed succesfully"}
-                break
+            metal_converted = self.check_conversion_above_threshhold()
+            if self.additions:
+                if metal_converted and self.check_ferrous_ion_above_threshold():
+                    if self.additions_index < 6:
+                        self.additions_update()
+                    else:
+                        status = {"success": True, "message": "Simulation completed succesfully"}
+                        break
+            else:
+                if metal_converted:
+                    status = {"success": True, "message": "Simulation completed succesfully"}
+                    break
+
 
             if time.clock() - t0 > self.MAX_TIME:
                 status = {"success": False, "message": "Simulation reached max time of %s" % self.MAX_TIME}
@@ -184,8 +210,14 @@ class System(object):
 
             biox_list.append(sys_data[0])
             chem_list.append(sys_data[1])
-            summary_list.append({"step": self.convert_to_minutes(i),
+
+            try:
+                summary_list.append({"step": self.convert_to_minutes(i),
                                 "rate_ratio": abs(sys_data[1]["cstr_data"]["total_rate_ferric"] / sys_data[0]["cstr_data"]["total_rate_ferric"])})
+            except Exception, e:
+                # import ipdb; ipdb.set_trace()
+                raise e
+
 
             i = i + 1
 
