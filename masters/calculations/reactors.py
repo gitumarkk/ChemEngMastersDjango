@@ -191,7 +191,8 @@ class CSTR(object):
 
     def update_step_count_in_component(self):
         for component in self.components:
-            component.step = self.step
+            # component.step = self.step
+            component.update_step(self.step)
 
     def update_flow_in(self):
         """
