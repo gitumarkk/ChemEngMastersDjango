@@ -16,6 +16,7 @@ class BioxidationRate(object):
         self.reactant_name = "Biomass"
         # self.component_conc = 0.00183439  # Assuming an initial biomass concentration
         self.component_conc = initial_cells * 4.8 * 10e-15 * 1000
+        self.reaction_step = 0.0
 
     def __unicode__(self):
         return u"BIOX"
@@ -37,11 +38,17 @@ class BioxidationRate(object):
         if self.ferrous == 0:
             rate_biomass = 0.0
         else:
-            rate_biomass = self.component_conc * (u_max  - k_d) / (1 + (K * np.divide(self.ferric, self.ferrous)))
+            try:
+                rate_biomass = self.component_conc * (u_max  - k_d) / (1 + (K * np.divide(self.ferric, self.ferrous)))
+            except Exception, e:
+                # import ipdb; ipdb.set_trace()
+                raise e
+
         self.component_conc = self.component_conc + (1.0 * rate_biomass)
 
     def simplified_hansford(self):
         q_spec_growth_rate = 23.55 / 3600
+        # q_spec_growth_rate = 1.0 / 3600
 
         K = 0.0024 # Tunde
         if self.ferrous == 0:
@@ -59,6 +66,10 @@ class BioxidationRate(object):
         Converts the ferric rate to ferrous rate
         """
         return rate_ferric_or_ferrous * (-1)
+
+    def update_step(self, step):
+        self.reaction_step = step
+        self.step = step
 
     def run(self):
         rate_ferrous = self.simplified_hansford()
@@ -85,8 +96,10 @@ class MetalDissolutionRate(object):
         self.ferric = initial_ferric or 0.
         self.system = system or constants.BATCH
         self.metal_ion = 0
-        self.ferric_last = 0
         self.step = 0
+        self.system_step = 0.0
+        self.reaction_step = 0.0
+        self.metal_ion_previous = 0
 
     def metal_powder_rate(self):
         # Return 0 rate when the initial metal decreases to negative
@@ -107,14 +120,18 @@ class MetalDissolutionRate(object):
         self.update_metal_ion_concentration()
         return rate_ferric
 
+    def update_step(self, step):
+        self.reaction_step += 1
+        self.step = step
+
     def shrinking_core_model(self):
         K = constants.DATA[self.reactant_name]["equation"]["K"]
         n = constants.DATA[self.reactant_name]["equation"]["n"]
         conc = np.power(self.ferric, n)
 
         a =  3 * K * conc
-        b = - 6 * np.power(K, 2) * np.power(conc, 2) * self.step
-        c =  3 * np.power(K, 3) * np.power(conc, 3) * np.power(self.step, 2)
+        b = - 6 * np.power(K, 2) * np.power(conc, 2) * self.reaction_step
+        c =  3 * np.power(K, 3) * np.power(conc, 3) * np.power(self.reaction_step, 2)
         return - (a + b + c) * self.metal_initial
 
     def calculate_based_on_conversion(self):
@@ -122,13 +139,14 @@ class MetalDissolutionRate(object):
         n = constants.DATA[self.reactant_name]["equation"]["n"]
 
         if self.reactant_name == "Zn":
-            X = 1 - np.exp(- np.power(K * (self.step + 1), 0.5))
+            X = 1 - np.exp(- np.power(K * (self.reaction_step + 1), 0.5))
         else:
-            X = 1 - (1 - K*np.power(self.ferric, n) * (self.step + 1))**3
+            X = 1 - (1 - K*np.power(self.ferric, n) * (self.reaction_step + 1))**3
         # if X > 1:
         #     X = 1.
 
-        rate_ferric = - 2 * (X * self.metal_initial - self.metal_ion)/(self.step+1)
+        rate_ferric = - 2 * (X * self.metal_initial - self.metal_ion)/(self.reaction_step+1)
+        # rate_ferric = - 2 * (X * self.metal_ion_previous - self.metal_ion)
         return rate_ferric
 
     def update_metal_reactant_concentration(self, rate_ferric):
