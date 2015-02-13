@@ -339,7 +339,8 @@ class Command(BaseCommand):
             line.set_linewidth(2)
 
 
-        plt.legend(ncol=3, mode="expand", borderaxespad=0., bbox_to_anchor=(-1.2, -0.3, 1.*2, .102))
+        if not self.simulate == "additions":
+            plt.legend(ncol=3, mode="expand", borderaxespad=0., bbox_to_anchor=(-1.2, -0.3, 1.*2, .102))
         # plt.legend(loc='center left', bbox_to_anchor=(1, 1))
         # plt.subplots_adjust(bottom=0.5)
 

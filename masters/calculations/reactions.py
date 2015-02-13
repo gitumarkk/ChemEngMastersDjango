@@ -47,8 +47,8 @@ class BioxidationRate(object):
         self.component_conc = self.component_conc + (1.0 * rate_biomass)
 
     def simplified_hansford(self):
-        q_spec_growth_rate = 23.55 / 3600
-        # q_spec_growth_rate = 1.0 / 3600
+        # q_spec_growth_rate = 23.55 / 3600
+        q_spec_growth_rate = 1.0 / 3600
 
         K = 0.0024 # Tunde
         if self.ferrous == 0:
