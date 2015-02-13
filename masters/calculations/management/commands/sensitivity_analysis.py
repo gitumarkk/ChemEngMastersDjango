@@ -56,6 +56,10 @@ class Command(BaseCommand):
             self.simulate = "experiments"
             self.experimental_sensitivity_analysis()
 
+        elif kwargs["simulate"] == "additions":
+            self.simulate = "additions"
+            self.additions_sensitivity_analysis()
+
 
     def experimental_sensitivity_analysis(self):
         analysis_list = [(1, "1 L")]
@@ -68,6 +72,18 @@ class Command(BaseCommand):
             output[row[1]] = sys.run()
 
         self.plot_sensitivity_analysis(output, analysis_list)
+
+    def additions_sensitivity_analysis(self):
+        analysis_list = [(6, "6 additions")]
+        output = {}
+
+        for row in analysis_list:
+            sys = system.System(BIOX, CHEM, FERRIC_FERROUS, IRON, initial_metals={"Cu": CU}, additions=True)
+            sys.build_cyclic_tanks()
+            output[row[1]] = sys.run()
+
+        self.plot_sensitivity_analysis(output, analysis_list)
+
 
     def volume_sensitivity_analysis(self):
         analysis_list = [(1, "1 L"),
@@ -102,9 +118,7 @@ class Command(BaseCommand):
 
     def metal_sensitivity_analysis(self):
         analysis_list = [(2, "2 g Cu"),
-                         (5, "5 g Cu"),
                          (10, "10 g Cu"),
-                         (15, "15 g Cu"),
                          (20, "20 g Cu")]
         # default = {"biox": 1, "chem": 1, "ferric_ferrous": 1000}
         # ____analysis_list = [{"Cu": 2, "label": "2 g Cu"},(10, "10 g Cu"), (20, "20 g Cu")]
@@ -119,8 +133,14 @@ class Command(BaseCommand):
         sys = system.System(10, 1, FERRIC_FERROUS, IRON, initial_metals={"Cu": 20})
         sys.build_cyclic_tanks()
         output["20 g Cu (10 L Bioox)"] = sys.run()
-
         analysis_list.append((20, "20 g Cu (10 L Bioox)"))
+
+        sys = system.System(BIOX, CHEM, FERRIC_FERROUS, IRON, initial_metals={"Cu": 20}, initial_cells=7.25e8)
+        sys.build_cyclic_tanks()
+        output["20 g Cu (7.25e8 cells)"] = sys.run()
+        analysis_list.append((7.25e8, "20 g Cu (7.25e8 cells)"))
+
+
         self.plot_sensitivity_analysis(output, analysis_list)
 
     def mixed_metals_sensitivity_analysis(self):
@@ -159,8 +179,13 @@ class Command(BaseCommand):
         sys = system.System(10, 1, 0.1, 9, initial_metals={"Cu": CU})
         sys.build_cyclic_tanks()
         output["0.1 (10 L Bioox)"] = sys.run()
-
         analysis_list.append((20, "0.1 (10 L Bioox)"))
+
+        sys = system.System(1, 1, 0.1, 9, initial_metals={"Cu": CU}, initial_cells=7.25e8)
+        sys.build_cyclic_tanks()
+        output["0.1 (7.25e8 cells)"] = sys.run()
+        analysis_list.append((7.25e8, "0.1 (7.25e8 cells)"))
+
         self.plot_sensitivity_analysis(output, analysis_list)
 
     def microorganism_sensitivity_analysis(self):
