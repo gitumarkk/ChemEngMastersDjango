@@ -78,7 +78,7 @@ class Command(BaseCommand):
         output = {}
 
         for row in analysis_list:
-            sys = system.System(BIOX, CHEM, FERRIC_FERROUS, IRON, initial_metals={"Cu": 4}, additions=True)
+            sys = system.System(BIOX, CHEM, FERRIC_FERROUS, IRON, initial_metals={"Cu": 20}, additions=True)
             sys.build_cyclic_tanks()
             output[row[1]] = sys.run()
 
@@ -217,23 +217,26 @@ class Command(BaseCommand):
         metals_chem = {}
 
         for k, data in sys_data.iteritems():
-            ferric_biox[k] = {"ferric": [], "time": [], "biomass": [], "Cu2+": []}
+            ferric_biox[k] = {"ferric": [], "time": [], "biomass": [], "Cu2+": [], "rate_ferric": []}
             for row in data["bioxidation"]:
                 ferric_biox[k]["ferric"].append(row["ions"]["ferric"])
                 ferric_biox[k]["time"].append(row["step"])
                 ferric_biox[k]["biomass"].append(row["cstr_data"]["components"]["Biomass"]["component_moles"])
                 ferric_biox[k]["Cu2+"].append(row["flow_out"]["components"]["Cu"])
+                ferric_biox[k]["rate_ferric"].append(row["cstr_data"]["total_rate_ferric"])
 
-            ferric_chem[k] = {"ferric": [], "time": []}
+            ferric_chem[k] = {"ferric": [], "time": [], "rate_ferric": []}
+            metals_chem[k] = {"Cu2+": [], "time": [], "Zn2+": [], "Sn2+": [], "copper": [], "rate_ferric": []}
             for row in data["chemical"]:
                 ferric_chem[k]["ferric"].append(row["ions"]["ferric"])
                 ferric_chem[k]["time"].append(row["step"])
+                ferric_chem[k]["rate_ferric"].append(row["cstr_data"]["total_rate_ferric"])
 
-            metals_chem[k] = {"Cu2+": [], "time": [], "Zn2+": [], "Sn2+": [], "copper": []}
             for row in data["chemical"]:
                 metals_chem[k]["copper"].append(row["cstr_data"]["components"]["Cu"]["component_moles"])
                 metals_chem[k]["Cu2+"].append(row["ions"]["Cu"])
                 metals_chem[k]["time"].append(row["step"])
+
 
                 if self.simulate == "mixed_metals":
                     metals_chem[k]["Zn2+"].append(row["ions"]["Zn"])
@@ -243,7 +246,7 @@ class Command(BaseCommand):
 
         fig = plt.figure(1, figsize=(8, 8))
         # fig.suptitle("Ferric ion Concentration in Biooxidation Reactor")
-        fig_subplot = fig.add_subplot(321)
+        fig_subplot = fig.add_subplot(421)
         fig_subplot.set_xlabel("Time (min)")
         fig_subplot.set_ylabel("[Fe3+] (mol/l)")
         fig_subplot.set_ylim(0, 0.18)
@@ -260,7 +263,7 @@ class Command(BaseCommand):
         #         bbox_inches='tight')
 
 
-        fig_subplot = fig.add_subplot(322)
+        fig_subplot = fig.add_subplot(422)
         fig_subplot.set_xlabel("Time (min)")
         fig_subplot.set_ylabel("[Fe3+] (mol/l)")
         fig_subplot.set_ylim(0, 0.18)
@@ -278,7 +281,7 @@ class Command(BaseCommand):
 
         # fig = plt.figure(2, figsize=(8, 8))
         # fig.suptitle("Ferric ion Concentration in Biooxidation Reactor")
-        fig_subplot = fig.add_subplot(323)
+        fig_subplot = fig.add_subplot(423)
         fig_subplot.set_xlabel("Time (min)")
         fig_subplot.set_ylabel("[Cu2+] (mol/l)")
         fig_subplot.set_title("[Cu2+] in Bioox Reactor (C)")
@@ -297,7 +300,7 @@ class Command(BaseCommand):
 
         # fig = plt.figure(4, figsize=(8, 8))
         # fig.suptitle("Cupric Ion Concentration in Metal Dissolution Reactor")
-        fig_subplot = fig.add_subplot(324)
+        fig_subplot = fig.add_subplot(424)
         fig_subplot.set_xlabel("Time (min)")
         fig_subplot.set_ylabel("[Cu2+] (mol/l)")
         fig_subplot.set_title("[Cu2+] in Chem Reactor (D)")
@@ -316,7 +319,7 @@ class Command(BaseCommand):
                 line.set_linewidth(2)
 
 
-        fig_subplot = fig.add_subplot(325)
+        fig_subplot = fig.add_subplot(425)
         fig_subplot.set_xlabel("Time (min)")
         fig_subplot.set_ylabel("[Biomass] (mol/l)")
         fig_subplot.set_title("[Biomass] in Bioox Reactor (E)")
@@ -328,7 +331,7 @@ class Command(BaseCommand):
             line.set_linewidth(2)
 
 
-        fig_subplot = fig.add_subplot(326)
+        fig_subplot = fig.add_subplot(426)
         fig_subplot.set_xlabel("Time (min)")
         fig_subplot.set_ylabel("[Copper] (mol/l)")
         fig_subplot.set_title("[Copper] in Chem Reactor [F]")
@@ -340,8 +343,31 @@ class Command(BaseCommand):
             line.set_linewidth(2)
 
 
+        fig_subplot = fig.add_subplot(427)
+        fig_subplot.set_xlabel("Time (min)")
+        fig_subplot.set_ylabel("[Rate Ferric] (mol/l/s)")
+        fig_subplot.set_title("Fe3+ Produc. in Biox Reactor [G]")
+        # fig_subplot.set_ylim(0, 0.18)
+        fig_subplot.grid('on')
+
+        for i, item in enumerate(analysis_list):
+            line, = fig_subplot.plot(ferric_biox[item[1]]["time"], ferric_biox[item[1]]["rate_ferric"], label=item[1])
+            line.set_linewidth(2)
+
+        fig_subplot = fig.add_subplot(428)
+        fig_subplot.set_xlabel("Time (min)")
+        fig_subplot.set_ylabel("Rate (mol/l/s)")
+        fig_subplot.set_title("Fe3+ consum. in Chem Reactor [H]")
+        fig_subplot.set_ylim(-0.001, 0.)
+        fig_subplot.grid('on')
+
+        for i, item in enumerate(analysis_list):
+            line, = fig_subplot.plot(ferric_chem[item[1]]["time"], ferric_chem[item[1]]["rate_ferric"], label=item[1])
+            line.set_linewidth(2)
+
+
         if not self.simulate == "additions":
-            plt.legend(ncol=3, mode="expand", borderaxespad=0., bbox_to_anchor=(-1.2, -0.3, 1.*2, .102))
+            plt.legend(ncol=3, mode="expand", borderaxespad=0., bbox_to_anchor=(-2, -0.6, 1.*3, .102))
         # plt.legend(loc='center left', bbox_to_anchor=(1, 1))
         # plt.subplots_adjust(bottom=0.5)
 

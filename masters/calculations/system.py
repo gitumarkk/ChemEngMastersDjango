@@ -160,8 +160,8 @@ class System(object):
             unit.step = step
 
     def additions_update(self):
-        self.chem_cstr.components[0].component_conc = 4.0 / 63.55
-        self.initial_metals["Cu"] = 4.0 / 63.55
+        self.chem_cstr.components[0].component_conc = 20.0 / 63.55
+        self.initial_metals["Cu"] = 20.0 / 63.55
         self.chem_cstr.components[0].metal_ion = 0.0
         self.chem_cstr.components[0].reaction_step = 0
         self.additions_index += 1
