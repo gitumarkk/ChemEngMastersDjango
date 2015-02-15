@@ -78,7 +78,7 @@ class Command(BaseCommand):
         output = {}
 
         for row in analysis_list:
-            sys = system.System(BIOX, CHEM, FERRIC_FERROUS, IRON, initial_metals={"Cu": CU}, additions=True)
+            sys = system.System(BIOX, CHEM, FERRIC_FERROUS, IRON, initial_metals={"Cu": 4}, additions=True)
             sys.build_cyclic_tanks()
             output[row[1]] = sys.run()
 
@@ -118,6 +118,7 @@ class Command(BaseCommand):
 
     def metal_sensitivity_analysis(self):
         analysis_list = [(2, "2 g Cu"),
+                         (5, "5 g Cu"),
                          (10, "10 g Cu"),
                          (20, "20 g Cu")]
         # default = {"biox": 1, "chem": 1, "ferric_ferrous": 1000}
