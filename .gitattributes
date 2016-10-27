@@ -3,7 +3,7 @@
 # Source files
 # ============
 *.pxd		text
-*.py 		text linguist-language=Python
+*.py 		linguist-language=Python
 *.py3 		text
 *.pyw 		text
 *.pyx  		text
